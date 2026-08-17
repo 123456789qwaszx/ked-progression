@@ -1,0 +1,15 @@
+<Project>
+
+  <!--
+    빌드 산출물을 전부 저장소 루트의 artifacts/ 로 몬다.
+
+    왜: UPM 패키지는 Runtime/ 폴더를 통째로 유니티에 넘긴다. 그 안에 obj/ 가 생기면
+    유니티가 obj/Debug/.../*.AssemblyInfo.cs 를 소스로 인식해 중복 어트리뷰트로 깨진다.
+    출력 위치를 옮겨 두면 그 사고가 구조적으로 불가능해진다.
+  -->
+  <PropertyGroup>
+    <UseArtifactsOutput>true</UseArtifactsOutput>
+    <ArtifactsPath>$(MSBuildThisFileDirectory)artifacts</ArtifactsPath>
+  </PropertyGroup>
+
+</Project>

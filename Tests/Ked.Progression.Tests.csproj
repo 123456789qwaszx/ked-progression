@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- 테스트는 dotnet에서만 이 프레임워크로 돈다. 유니티에서는 asmdef가 EditMode로 돌린다. -->
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>Ked.Progression.Tests</RootNamespace>
+
+    <!--
+      ⚠ 아래 셋은 기본 템플릿이 켜 두는 "dotnet 전용 편의"다. 유니티에는 없다.
+      켜 두면 dotnet에서 통과한 테스트 코드가 유니티 Test Runner에서 컴파일 실패한다.
+
+      ImplicitUsings : 유니티는 using을 자동으로 넣어 주지 않는다
+      LangVersion    : 유니티 6000은 C# 9까지다
+      Nullable       : 유니티는 nullable 컨텍스트를 켜지 않는다
+    -->
+    <ImplicitUsings>disable</ImplicitUsings>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="NUnit" Version="3.14.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.6.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Runtime\Ked.Progression.csproj" />
+  </ItemGroup>
+
+</Project>

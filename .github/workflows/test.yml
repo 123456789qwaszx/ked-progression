@@ -1,0 +1,23 @@
+name: test
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ '*' ]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      # 유니티 없이 돈다 — 코어가 netstandard2.1이고 엔진 의존이 0이기 때문이다.
+      # 런타임 저장소에서 "에디터가 열려 있어 배치가 막힌다"가 여기엔 없다.
+      - name: test
+        run: dotnet test Tests/Ked.Progression.Tests.csproj --nologo --verbosity minimal

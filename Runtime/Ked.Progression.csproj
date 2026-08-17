@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!--
+      netstandard2.1 = 유니티(.NET Standard 2.1 프로파일)와 Avalonia(.NET 8+)의 공통분모.
+      이 한 줄이 "같은 DLL을 양쪽에서 쓴다"의 전부다.
+    -->
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <RootNamespace>Ked.Progression</RootNamespace>
+
+    <!--
+      ⚠ 아래 둘은 dotnet 빌드를 유니티 빌드의 대역으로 만들기 위한 것이다.
+
+      LangVersion 9.0 : 유니티 6000은 C# 9까지만 컴파일한다. 이걸 안 박으면
+                        dotnet에서 통과한 최신 문법이 유니티에서 깨진다.
+      Nullable disable: 유니티는 nullable 컨텍스트를 켜지 않는다. 양쪽 경고가 갈리면
+                        "dotnet 초록 = 유니티 초록"이 성립하지 않는다.
+
+      즉 이 둘이 CI의 신뢰도를 정한다.
+    -->
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+
+    <Version>0.1.0</Version>
+  </PropertyGroup>
+
+</Project>

@@ -1,0 +1,15 @@
+{
+  "name": "com.ked.progression",
+  "version": "0.1.0",
+  "displayName": "Ked Progression",
+  "description": "챕터·에피소드 진행 규칙. 저작 도구와 런타임이 같은 구현을 공유한다. 엔진 의존 0.",
+  "unity": "6000.0",
+  "keywords": [
+    "visual-novel",
+    "progression",
+    "chapter"
+  ],
+  "author": {
+    "name": "강언덕"
+  }
+}

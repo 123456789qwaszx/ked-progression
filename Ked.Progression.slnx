@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/Runtime/">
+    <Project Path="Runtime/Ked.Progression.csproj" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="Tests/Ked.Progression.Tests.csproj" />
+  </Folder>
+</Solution>

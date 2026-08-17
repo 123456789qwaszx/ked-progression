@@ -1,0 +1,17 @@
+# 빌드 산출물 (Directory.Build.props가 전부 여기로 몬다)
+artifacts/
+
+# 혹시 개별 프로젝트에서 새어 나온 것
+bin/
+obj/
+
+# IDE
+.vs/
+.idea/
+.vscode/
+*.user
+*.suo
+
+# ⚠ .meta 는 무시하지 않는다.
+# UPM git 패키지는 유니티가 .meta 를 저장소에 쓰지 못하므로, 커밋된 .meta 의
+# GUID 가 곧 참조 안정성이다. 무시하면 소비하는 프로젝트마다 GUID 가 달라진다.
