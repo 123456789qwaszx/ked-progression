@@ -35,10 +35,13 @@ namespace Ked.Progression.Tests
         [Test]
         public void 저작_쪽이_보낸_표본도_그대로_실린다()
         {
-            // 두 번째 실데이터. 이쪽이 견본 워크북에서 뽑은 것과 달리, 저작 쪽이 직접
-            // 만들어 보낸 출력이다(java-start `docs/ch01.progression.sample.json`,
-            // 커밋 25a2810). **독립적으로 만들어진 입력**이라 이름 규약이 우연히 맞은
-            // 것이 아님을 확인해 준다.
+            // 두 번째 실데이터. 이쪽이 견본 워크북에서 뽑은 것과 달리 저작 쪽이 직접
+            // 만들어 보낸 출력이다(java-start `docs/ch01.progression.sample.json`).
+            // **독립적으로 만들어진 입력**이라 이름 규약이 우연히 맞은 것이 아님을 확인해 준다.
+            //
+            // ⚠ 2차 표본으로 갱신됐다 — 엔딩키가 실리기 시작해(v11) 엔딩 둘이 들어 있다.
+            // 그쪽이 `ProgressionSampleGoldenTests`로 붙들고 있으므로, 규격이 바뀌면
+            // 그쪽 테스트가 먼저 깨지고 이 픽스처를 다시 받아야 한다.
             ProgressionLoadResult result = ProgressionLoader.Load(ReadFixture("chapter-ch01-sample.json"));
 
             Assert.That(result.HasErrors, Is.False,
@@ -48,22 +51,46 @@ namespace Ked.Progression.Tests
 
             // 에피소드 ID가 한글이다 — 규약이 ASCII를 전제하지 않는다.
             Assert.That(chapter.StartEpisodeId, Is.EqualTo("시작"));
-            Assert.That(chapter.Nodes.Count, Is.EqualTo(4));
+            Assert.That(chapter.Nodes.Count, Is.EqualTo(5));
             Assert.That(chapter.StatsByKey.Keys, Is.EquivalentTo(new[] { "trust", "fatigue" }));
 
-            // 갈라졌다 다시 만나는 최소 모양 — 두 갈래가 같은 노드로 수렴한다.
+            // 두 갈래가 서로 다른 엔딩으로 간다 — 엔딩키가 실제로 실려 왔다는 증거.
+            Assert.That(WalkToEnd(chapter, 0), Is.EqualTo("ch01_true"));
+            Assert.That(WalkToEnd(chapter, 1), Is.EqualTo("ch01_alone"));
+        }
+
+        /// <summary>
+        /// 시작에서 <paramref name="choiceIndex"/>를 고른 뒤 끝까지 걸어 엔딩키를 낸다.
+        /// 전이기를 거치므로 관문·자동 진행 판정이 실제로 돈다.
+        /// </summary>
+        private static string WalkToEnd(ChapterProgression chapter, int choiceIndex)
+        {
             ProgressionState state = chapter.CreateInitialState();
             ChapterAdvance advance = ChapterTransition.Resolve(chapter, state);
 
             Assert.That(advance.Kind, Is.EqualTo(ChapterAdvanceKind.AwaitPlayerChoice));
             Assert.That(advance.Options.Count, Is.EqualTo(2));
 
-            foreach (ResolvedOption option in advance.Options)
+            state = state.Commit(chapter, advance.Options[choiceIndex].Option);
+
+            for (int guard = 0; guard < 10; guard++)
             {
-                Assert.That(chapter.TryGetNode(option.Option.TargetEpisodeId, out EpisodeNode branch), Is.True);
-                Assert.That(branch.TryGetAutoOption(out EpisodeOption rejoin), Is.True);
-                Assert.That(rejoin.TargetEpisodeId, Is.EqualTo("끝"), "두 갈래가 같은 곳으로 모인다");
+                advance = ChapterTransition.Resolve(chapter, state);
+
+                if (advance.Kind == ChapterAdvanceKind.ChapterEnded)
+                {
+                    return advance.EndingKey;
+                }
+
+                state = state.Commit(
+                    chapter,
+                    advance.Kind == ChapterAdvanceKind.AutoAdvance
+                        ? advance.AutoOption
+                        : advance.Options.First(option => option.IsSelectable).Option);
             }
+
+            Assert.Fail("10걸음 안에 끝나지 않았다 — 표본이 바뀌었거나 순환이다.");
+            return null;
         }
 
         [Test]
