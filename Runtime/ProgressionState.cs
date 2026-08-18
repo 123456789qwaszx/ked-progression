@@ -103,6 +103,24 @@ namespace Ked.Progression
         }
 
         /// <summary>
+        /// 세이브에서 되살린다. <b>internal이다</b> — 임의의 상태를 손으로 만드는 길을 열면
+        /// "그래프에 없는 자리에 있는 상태"가 생긴다. 정상 경로는 <see cref="CreateInitial"/>과
+        /// <see cref="Commit"/> 둘뿐이고, 여기는 <see cref="ProgressionSave.Restore"/>가
+        /// 검증을 마친 값으로만 부른다.
+        /// </summary>
+        internal static ProgressionState FromSave(
+            string chapterId,
+            string episodeId,
+            Dictionary<string, int> stats,
+            HashSet<string> clearedEpisodes,
+            HashSet<string> clearedChapters,
+            List<ChapterEnding> endingHistory)
+        {
+            return new ProgressionState(
+                chapterId, episodeId, stats, clearedEpisodes, clearedChapters, endingHistory);
+        }
+
+        /// <summary>
         /// 스탯 값. <b>정의되지 않은 키는 0으로 떨어뜨리지 않고 던진다</b> — 규율 1.
         ///
         /// 조용히 0을 주면 <c>trust &gt;= 0</c>이 언제나 참이 되어, 작가가 오타 낸 조건이

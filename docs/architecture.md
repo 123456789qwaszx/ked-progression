@@ -593,14 +593,26 @@ namespace Ked.Progression
         public static ProgressionSave From(ProgressionState state, string scenarioId);
     }
 
-    public static class ProgressionSaveLoader
+    public static class ProgressionSave
     {
+        public const int CurrentSchemaVersion = 1;
+
+        /// <summary>시나리오를 **객체로** 받는다 — ID를 문자열로 받으면 엉뚱한 이름이
+        /// 붙은 세이브가 조용히 만들어진다.</summary>
+        public static ProgressionSaveDto Capture(
+            ScenarioProgression scenario, ProgressionState state);
+
         /// <summary>
         /// 세이브는 <b>어제 만든 콘텐츠</b>로 저장되고 <b>오늘 고친 콘텐츠</b>로 로드된다.
-        /// 진단이 있어도 상태는 만든다 — 호스트가 "이어하기 불가"를 설명할 수 있어야 한다.
+        ///
+        /// ⚠ <b>경고면 상태를 만들고 오류면 안 만든다</b>(2026-08-18 구현에서 정정).
+        /// 초안에는 "진단이 있어도 상태는 만든다"고 적었는데, 지금 에피소드가 사라진
+        /// 세이브로는 <b>이어할 수가 없다</b> — 반쯤 되살린 진행으로 시작하면 무엇이
+        /// 어긋났는지 플레이해 봐야 안다. 값이 조정된 정도(clamp·버려진 스탯)는 경고로
+        /// 두고 상태를 낸다.
         /// </summary>
         public static ProgressionRestoreResult Restore(
-            ScenarioProgression scenario, ProgressionSave save);
+            ScenarioProgression scenario, ProgressionSaveDto save);
     }
 ```
 
@@ -690,7 +702,7 @@ namespace Ked.Progression
 | **D1** ✅ | 스탯 정의의 소유 — 챕터냐 시나리오냐 | **시나리오.** 아래 참조 |
 | **D2** ✅ | 엔딩을 무엇이 판정하나 | **노드의 `EndingKey`.** 아래 참조 |
 | **D3** ✅ | `Tokens` · `Flags` | **둘 다 안 넣는다.** `Flags`는 v9가 `Stat` 0/1로 통일했고, `Tokens`(아이템·열쇠)는 저작 쪽 확인 결과 **작가 계층에서 Yarn 변수로 살고 진행 JSON에 나오지 않는다** — 두 계층이 다르니 섞지 않는다 |
-| **D4** | 세이브 스키마 버전 정책 | 처음부터 넣는다. **필드가 사라지거나 뜻이 바뀔 때만** 올린다 |
+| **D4** ✅ | 세이브 스키마 버전 정책 | **처음부터 넣었다.** 필드가 사라지거나 뜻이 바뀔 때만 올린다 — 추가는 안 올린다(없는 값은 정의의 초기값이 메운다). 더 높은 버전은 **로드 거부** |
 | **D5** | 저작 `간선` 시트에 `종류` 열을 둘 것인가 | **권고: 둔다.** 안 두면 "문구를 실수로 지웠다"와 "의도한 자동 진행"을 데이터로 구별할 방법이 없다. 그때까지 로더가 자동 진행 간선을 **경고로 보고**한다 |
 
 ### D1 확정 — 스탯 정의는 시나리오가 소유한다 (2026-08-18)

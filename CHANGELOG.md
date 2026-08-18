@@ -34,10 +34,15 @@
 - `ScenarioProgressionDto` · `EndingRuleDto` + `ProgressionLoader.Load(ScenarioProgressionDto)`
 - `EpisodeOption.ViaNodeId` — **연출을 매다는 자리** (계약서 §H-3). 이 길을 지나며 거쳐 갈
   Yarn 노드의 이름이고, 에피소드 사이 트랜지션 연출과 엔딩 연출이 같은 칸을 쓴다
+- `ChapterReachability` · `StatSpan` · `UnreachableCause` — **도달성 증명.** 저작 도구에서
+  이관했고 등가성을 코퍼스로 고정했다
+- `ProgressionSave` · `ProgressionSaveDto` · `ProgressionRestoreResult` — **유저 데이터.**
+  굽고 되살린다. 어려운 것은 직렬화가 아니라 콘텐츠가 바뀐 뒤의 로드다
+- `Tests/Fixtures/reachability-oracle.json` — 원본 증명기를 돌려 뽑은 등가성 코퍼스
 - `Tests/Fixtures/chapter-ch01-sample.json` — 저작 쪽이 직접 만들어 보낸 표본
 - `Tests/Fixtures/chapter-sample-export.json` — 툴이 실제로 낸 챕터 JSON
 - `Tests/Fixtures/scenario-two-chapters.json` — 손으로 쓴 시나리오 (툴에 시나리오 저작이 없다)
-- 계약 테스트 128개
+- 계약 테스트 140개
 
 ### 변경 (호환 깨짐 — `0.x`라 지금이 가장 싸다)
 
@@ -66,6 +71,25 @@
 
 ### 결정
 
+- **세이브에서 조용해도 되는 것은 하나뿐이다** — 새로 생긴 스탯을 정의의 초기값으로
+  채우는 것. 스탯이 느는 건 콘텐츠가 자라는 정상 경로이고, 그때 옛 세이브를 못 열게 하면
+  개발이 멈춘다. 나머지는 전부 진단이 붙는다 — 버려진 스탯 · clamp된 값 · 사라진 클리어
+  기록(그것을 보던 관문이 다시 잠긴다)
+- **경고면 상태를 만들고 오류면 안 만든다.** 초안에는 "진단이 있어도 상태는 만든다"고
+  적었는데, **지금 에피소드가 사라진 세이브로는 이어할 수가 없다** — 반쯤 되살린 진행으로
+  시작하면 무엇이 어긋났는지 플레이해 봐야 안다. 값이 조정된 정도는 경고로 두고 상태를 낸다
+- **임의의 상태를 손으로 만드는 길을 안 열었다.** 되살리기는 `ProgressionState.FromSave`를
+  쓰는데 그것이 `internal`이다 — 공개하면 "그래프에 없는 자리에 있는 상태"가 만들어진다.
+  정상 경로는 `CreateInitial`과 `Commit` 둘뿐이다
+- **`Capture`가 시나리오를 객체로 받는다.** ID를 문자열로 받으면 엉뚱한 시나리오 이름이
+  붙은 세이브가 조용히 만들어진다 — 객체에서 꺼내면 그럴 수가 없다 (D4)
+- **증명을 옮기며 알고리즘을 개선하지 않았다.** 판정 기준이 "이관 전후로 결과가 같다"이므로
+  더 나은 방법이 보여도 등가성이 먼저다. 등가성은 주장이 아니라 **코퍼스**로 남겼다 —
+  원본 증명기를 그대로 돌려 케이스 일곱마다 내보낸 JSON과 그때의 결과를 한 벌로 저장했고,
+  테스트가 도달 가능 집합·완전 탐색 여부·에피소드별 스탯 폭 셋을 대조한다
+- **도달 불가 원인을 문장이 아니라 값으로 낸다** (`UnreachableCause` + `BlockingCondition`).
+  저작 도구가 이미 사람이 읽을 문장을 만들고 있어 여기서 또 만들면 규약 사본이 된다 —
+  `ResolvedOption.LockedReason`과 같은 판단이다
 - **연출은 간선의 종류와 직교한다.** `ViaNodeId`는 선택지든 자동 진행이든 붙는다 —
   관문은 자동 진행에 뜻이 없어 인자를 뺐지만, 말없이 넘어가는 자리가 오히려 트랜지션
   연출의 주 무대다. 팀장이 요구한 "에피소드 사이 트랜지션"과 엔딩 연출이 **같은 기능의
@@ -158,15 +182,15 @@
 
 ### 예정
 
-순서와 게이트는 `docs/work-plan.md`. **게이트 G0~G3은 닫혔다.**
+순서와 게이트는 `docs/work-plan.md`. **게이트 G0~G5가 전부 닫혔다.**
 
-- `ProgressionSave` · `ProgressionSaveLoader` (G4) — 유저 데이터. 지금 런타임에서
-  **진행 상태가 어디에도 저장되지 않는다**(`EpisodeSelectionStateData`가 메모리에만 있다).
-  콘텐츠가 바뀐 뒤의 로드 규칙이 여기서 가장 어려운 부분이다
-- VnTool의 `ChapterReachabilityProver` 이관 (G5, 오라클) — 그다음 챕터 연쇄 증명
-  (ch01 출구 스팬 → ch02 진입 가정)
-- 저작 쪽(X2) — exporter가 `EndingRules`를 낼 때 `Outcome`을 명시 문자열로 낼 것
-- `.meta` 생성·커밋 — 런타임이 UPM으로 무는 시점에 필요하다
+- **`0.2.0` 태그** — 소비자가 가져갈 만해졌다. 다만 유니티가 물려면 `.meta`가 먼저다
+- `.meta` 생성·커밋 — 한 번 임포트해 만든 뒤 가져와야 한다. **커밋된 GUID가 참조 안정성**이다
+- **챕터 연쇄 증명** — ch01 출구 스팬 → ch02 진입 가정. 안 셋과 권고는 `work-plan.md` §9.
+  콘텐츠가 실제로 둘 이상 이어진 뒤에 한다(지금은 검증할 실물이 없다)
+- 저작 쪽(X2·X3·X7) — `EndingRules` 내보내기 · 간선 `종류` 열 · `ViaNodeId` 발행 경로
+- 런타임(X5) — 진행 블록을 세이브에 싣기. **세이브 층 자체가 먼저 필요하다**
+- bool 스탯을 무엇이 켜나 — 간선으로는 값이 절대 안 바뀐다(`handoff.md` §6-4)
 
 ## [0.1.0] - 2026-08-17
 
