@@ -8,18 +8,17 @@
 
 ---
 
-## 1. ⚠ 지금 당장 — 커밋을 분리해야 한다
+## 1. ✅ X1 닫힘 — 확인했다
 
-`java-start` 작업 트리에 두 가지가 섞여 있다.
+`java-start` `559a1fc` "Stats[]를 내보낸다 — Gate D를 막던 한 칸". 커밋 분리 요청은
+해소됐다(이 문서 첫 판에 적었던 것).
 
-| | 무엇 | 상태 |
-|---|---|---|
-| **X1** | `ChapterProgressionExporter`의 `Stats` 추가 + `ChapterExportAndFixtureTests`의 그 테스트 | **커밋 필요** |
-| 병행 | `YarnBundleEmitter` · `DocumentOutputOptions` · 골든 파일 삭제 · `InlineMarkerTests` 삭제 | 별개 작업 |
+보내 준 표본 `docs/ch01.progression.sample.json`도 **픽스처로 받았다** —
+`ked-progression/Tests/Fixtures/chapter-ch01-sample.json`.
+견본 워크북에서 뽑은 이쪽 것과 달리 **독립적으로 만들어진 입력**이라, 필드 이름 규약이
+우연히 맞은 게 아님을 확인해 준다. 한글 에피소드 ID(`시작`·`믿는길`·`끝`)도 그대로 돈다.
 
-**X1을 따로 떼어 먼저 커밋하는 것을 권한다.** `ked-progression`의 픽스처
-`Tests/Fixtures/chapter-sample-export.json`이 그 exporter 출력에서 나왔기 때문에,
-X1이 커밋되기 전까지 저쪽 테스트는 **재현할 수 없는 산출물**에 기대고 있다.
+`RealExportLoadTests.저작_쪽이_보낸_표본도_그대로_실린다`가 그 테스트다.
 
 ---
 
@@ -156,19 +155,19 @@ X1이 커밋되기 전까지 저쪽 테스트는 **재현할 수 없는 산출�
 
 ## 6. 픽스처를 다시 만드는 법
 
-`ked-progression/Tests/Fixtures/chapter-sample-export.json`은
-`java-start/docs/chapter-graph-sample.xlsx`를 내보낸 결과다.
-**exporter가 바뀌면 다시 만들어야 한다.**
+**exporter가 바뀌면 두 픽스처를 다시 만들어야 한다.**
 
-`Vn.Authoring.Tests`에 임시 테스트를 하나 두고 돌린 뒤 지우면 된다:
+| 픽스처 | 출처 |
+|---|---|
+| `chapter-ch01-sample.json` | 그쪽 `docs/ch01.progression.sample.json` — **그냥 다시 보내 주면 된다** |
+| `chapter-sample-export.json` | `docs/chapter-graph-sample.xlsx`를 내보낸 것 |
 
-1. `ChapterWorkbookReader.Read(chapter-graph-sample.xlsx)`
-2. `branch05.02A`를 뺀 절단본을 만든다 — 원본은 그 에피소드가 도달 불가라 내보내기가 거부한다
-3. `ChapterProgressionExporter.Export(trimmed, episodesFolder: null)`
-4. `result.Json`을 파일로 쓴다
+두 번째는 VnTool로 프로젝트를 열면 `exported/{챕터}.progression.json`이 자동으로 나가므로
+그걸 복사하면 된다. 다만 견본 챕터는 `branch05.02A`가 도달 불가라 **원본 그대로는 내보내기가
+거부한다** — 그 에피소드를 뺀 절단본이 필요하다(기존 테스트
+`견본이_런타임_필드와_일대일로_내보내진다`의 `Trim` 헬퍼가 같은 일을 한다).
 
-기존 테스트 `견본이_런타임_필드와_일대일로_내보내진다`가 같은 절단 로직(`Trim`)을 쓰고 있으니
-그걸 복사하면 된다.
+번거로우면 **첫 번째 것만 유지해도 된다.** 그쪽이 만든 표본이 더 작고 목적이 분명하다.
 
 ---
 

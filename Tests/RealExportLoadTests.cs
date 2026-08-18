@@ -21,15 +21,49 @@ namespace Ked.Progression.Tests
     /// </summary>
     public sealed class RealExportLoadTests
     {
-        private static ChapterProgressionDto ReadFixture()
+        private static ChapterProgressionDto ReadFixture(
+            string name = "chapter-sample-export.json")
         {
-            string path = Path.Combine(
-                AppContext.BaseDirectory, "Fixtures", "chapter-sample-export.json");
+            string path = Path.Combine(AppContext.BaseDirectory, "Fixtures", name);
 
             Assert.That(File.Exists(path), Is.True, $"픽스처가 없다: {path}");
 
             // 대소문자를 관대하게 두지 않는다 — 관대하면 이름 불일치를 못 잡는다.
             return JsonSerializer.Deserialize<ChapterProgressionDto>(File.ReadAllText(path));
+        }
+
+        [Test]
+        public void 저작_쪽이_보낸_표본도_그대로_실린다()
+        {
+            // 두 번째 실데이터. 이쪽이 견본 워크북에서 뽑은 것과 달리, 저작 쪽이 직접
+            // 만들어 보낸 출력이다(java-start `docs/ch01.progression.sample.json`,
+            // 커밋 25a2810). **독립적으로 만들어진 입력**이라 이름 규약이 우연히 맞은
+            // 것이 아님을 확인해 준다.
+            ProgressionLoadResult result = ProgressionLoader.Load(ReadFixture("chapter-ch01-sample.json"));
+
+            Assert.That(result.HasErrors, Is.False,
+                string.Join(" | ", result.Diagnostics.Select(d => d.ToString())));
+
+            ChapterProgression chapter = result.Chapter;
+
+            // 에피소드 ID가 한글이다 — 규약이 ASCII를 전제하지 않는다.
+            Assert.That(chapter.StartEpisodeId, Is.EqualTo("시작"));
+            Assert.That(chapter.Nodes.Count, Is.EqualTo(4));
+            Assert.That(chapter.StatsByKey.Keys, Is.EquivalentTo(new[] { "trust", "fatigue" }));
+
+            // 갈라졌다 다시 만나는 최소 모양 — 두 갈래가 같은 노드로 수렴한다.
+            ProgressionState state = chapter.CreateInitialState();
+            ChapterAdvance advance = ChapterTransition.Resolve(chapter, state);
+
+            Assert.That(advance.Kind, Is.EqualTo(ChapterAdvanceKind.AwaitPlayerChoice));
+            Assert.That(advance.Options.Count, Is.EqualTo(2));
+
+            foreach (ResolvedOption option in advance.Options)
+            {
+                Assert.That(chapter.TryGetNode(option.Option.TargetEpisodeId, out EpisodeNode branch), Is.True);
+                Assert.That(branch.TryGetAutoOption(out EpisodeOption rejoin), Is.True);
+                Assert.That(rejoin.TargetEpisodeId, Is.EqualTo("끝"), "두 갈래가 같은 곳으로 모인다");
+            }
         }
 
         [Test]
