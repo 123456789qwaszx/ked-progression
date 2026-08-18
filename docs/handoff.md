@@ -78,7 +78,7 @@
 | **G2** | **툴이 낸 챕터 JSON**이 오류 0으로 실리고 끝까지 걸어진다 | ✅ `RealExportLoadTests` |
 | **G3** | 챕터가 엔딩키로 갈리고 **스탯이 넘어간다** | ✅ `ScenarioProgressionTests` |
 | **G4** | 껐다 켜도 같다 — 세이브 왕복 | ❌ **다음 작업** |
-| **G5** | 도달성 증명이 이관 전후로 같은 답 | ❌ |
+| **G5** | 도달성 증명이 이관 전후로 같은 답 | ✅ `ReachabilityEquivalenceTests` (코퍼스 7 케이스) |
 
 ---
 

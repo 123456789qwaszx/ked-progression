@@ -1,0 +1,234 @@
+[
+  {
+    "name": "직선",
+    "chapterJson": "{\r\n  \"ChapterId\": \"c1\",\r\n  \"DisplayName\": \"c1\",\r\n  \"StartEpisodeId\": \"a\",\r\n  \"Stats\": [\r\n    {\r\n      \"Key\": \"trust\",\r\n      \"DisplayName\": \"trust\",\r\n      \"Type\": \"Number\",\r\n      \"Initial\": 0,\r\n      \"Minimum\": 0,\r\n      \"Maximum\": 10\r\n    }\r\n  ],\r\n  \"Nodes\": [\r\n    {\r\n      \"EpisodeId\": \"a\",\r\n      \"Title\": \"a\",\r\n      \"IndexText\": \"\",\r\n      \"Kind\": \"Main\",\r\n      \"DialogueEntryId\": \"a\",\r\n      \"VisibleConditions\": [],\r\n      \"UnlockConditions\": [],\r\n      \"NextOptions\": [\r\n        {\r\n          \"TargetEpisodeId\": \"b\",\r\n          \"ChoiceLabel\": \"\",\r\n          \"VisibleConditions\": [],\r\n          \"Conditions\": [],\r\n          \"HideWhenLocked\": false,\r\n          \"LockedReasonText\": \"\",\r\n          \"StatChanges\": []\r\n        }\r\n      ],\r\n      \"Attachments\": [],\r\n      \"IsChapterEndingCandidate\": false,\r\n      \"EndingKey\": \"\",\r\n      \"DesignerNote\": \"\",\r\n      \"Position\": {\r\n        \"X\": 0,\r\n        \"Y\": 0\r\n      }\r\n    },\r\n    {\r\n      \"EpisodeId\": \"b\",\r\n      \"Title\": \"b\",\r\n      \"IndexText\": \"\",\r\n      \"Kind\": \"Main\",\r\n      \"DialogueEntryId\": \"b\",\r\n      \"VisibleConditions\": [],\r\n      \"UnlockConditions\": [],\r\n      \"NextOptions\": [\r\n        {\r\n          \"TargetEpisodeId\": \"c\",\r\n          \"ChoiceLabel\": \"\",\r\n          \"VisibleConditions\": [],\r\n          \"Conditions\": [],\r\n          \"HideWhenLocked\": false,\r\n          \"LockedReasonText\": \"\",\r\n          \"StatChanges\": []\r\n        }\r\n      ],\r\n      \"Attachments\": [],\r\n      \"IsChapterEndingCandidate\": false,\r\n      \"EndingKey\": \"\",\r\n      \"DesignerNote\": \"\",\r\n      \"Position\": {\r\n        \"X\": 0,\r\n        \"Y\": 0\r\n      }\r\n    },\r\n    {\r\n      \"EpisodeId\": \"c\",\r\n      \"Title\": \"c\",\r\n      \"IndexText\": \"\",\r\n      \"Kind\": \"Main\",\r\n      \"DialogueEntryId\": \"c\",\r\n      \"VisibleConditions\": [],\r\n      \"UnlockConditions\": [],\r\n      \"NextOptions\": [],\r\n      \"Attachments\": [],\r\n      \"IsChapterEndingCandidate\": false,\r\n      \"EndingKey\": \"\",\r\n      \"DesignerNote\": \"\",\r\n      \"Position\": {\r\n        \"X\": 0,\r\n        \"Y\": 0\r\n      }\r\n    }\r\n  ],\r\n  \"EndingRules\": []\r\n}",
+    "reachable": [
+      "a",
+      "b",
+      "c"
+    ],
+    "complete": true,
+    "spans": {
+      "a": [
+        {
+          "Key": "trust",
+          "Minimum": 0,
+          "Maximum": 0
+        }
+      ],
+      "b": [
+        {
+          "Key": "trust",
+          "Minimum": 0,
+          "Maximum": 0
+        }
+      ],
+      "c": [
+        {
+          "Key": "trust",
+          "Minimum": 0,
+          "Maximum": 0
+        }
+      ]
+    }
+  },
+  {
+    "name": "분기수렴",
+    "chapterJson": "{\r\n  \"ChapterId\": \"c2\",\r\n  \"DisplayName\": \"c2\",\r\n  \"StartEpisodeId\": \"a\",\r\n  \"Stats\": [\r\n    {\r\n      \"Key\": \"trust\",\r\n      \"DisplayName\": \"trust\",\r\n      \"Type\": \"Number\",\r\n      \"Initial\": 0,\r\n      \"Minimum\": -5,\r\n      \"Maximum\": 10\r\n    }\r\n  ],\r\n  \"Nodes\": [\r\n    {\r\n      \"EpisodeId\": \"a\",\r\n      \"Title\": \"a\",\r\n      \"IndexText\": \"\",\r\n      \"Kind\": \"Main\",\r\n      \"DialogueEntryId\": \"a\",\r\n      \"VisibleConditions\": [],\r\n      \"UnlockConditions\": [],\r\n      \"NextOptions\": [\r\n        {\r\n          \"TargetEpisodeId\": \"x\",\r\n          \"ChoiceLabel\": \"믿는다\",\r\n          \"VisibleConditions\": [],\r\n          \"Conditions\": [],\r\n          \"HideWhenLocked\": false,\r\n          \"LockedReasonText\": \"\",\r\n          \"StatChanges\": [\r\n            {\r\n              \"Key\": \"trust\",\r\n              \"Amount\": 3\r\n            }\r\n          ]\r\n        },\r\n        {\r\n          \"TargetEpisodeId\": \"y\",\r\n          \"ChoiceLabel\": \"의심한다\",\r\n          \"VisibleConditions\": [],\r\n          \"Conditions\": [],\r\n          \"HideWhenLocked\": false,\r\n          \"LockedReasonText\": \"\",\r\n          \"StatChanges\": [\r\n            {\r\n              \"Key\": \"trust\",\r\n              \"Amount\": -1\r\n            }\r\n          ]\r\n        }\r\n      ],\r\n      \"Attachments\": [],\r\n      \"IsChapterEndingCandidate\": false,\r\n      \"EndingKey\": \"\",\r\n      \"DesignerNote\": \"\",\r\n      \"Position\": {\r\n        \"X\": 0,\r\n        \"Y\": 0\r\n      }\r\n    },\r\n    {\r\n      \"EpisodeId\": \"x\",\r\n      \"Title\": \"x\",\r\n      \"IndexText\": \"\",\r\n      \"Kind\": \"Main\",\r\n      \"DialogueEntryId\": \"x\",\r\n      \"VisibleConditions\": [],\r\n      \"UnlockConditions\": [],\r\n      \"NextOptions\": [\r\n        {\r\n          \"TargetEpisodeId\": \"z\",\r\n          \"ChoiceLabel\": \"\",\r\n          \"VisibleConditions\": [],\r\n          \"Conditions\": [],\r\n          \"HideWhenLocked\": false,\r\n          \"LockedReasonText\": \"\",\r\n          \"StatChanges\": []\r\n        }\r\n      ],\r\n      \"Attachments\": [],\r\n      \"IsChapterEndingCandidate\": false,\r\n      \"EndingKey\": \"\",\r\n      \"DesignerNote\": \"\",\r\n      \"Position\": {\r\n        \"X\": 0,\r\n        \"Y\": 0\r\n      }\r\n    },\r\n    {\r\n      \"EpisodeId\": \"y\",\r\n      \"Title\": \"y\",\r\n      \"IndexText\": \"\",\r\n      \"Kind\": \"Main\",\r\n      \"DialogueEntryId\": \"y\",\r\n      \"VisibleConditions\": [],\r\n      \"UnlockConditions\": [],\r\n      \"NextOptions\": [\r\n        {\r\n          \"TargetEpisodeId\": \"z\",\r\n          \"ChoiceLabel\": \"\",\r\n          \"VisibleConditions\": [],\r\n          \"Conditions\": [],\r\n          \"HideWhenLocked\": false,\r\n          \"LockedReasonText\": \"\",\r\n          \"StatChanges\": []\r\n        }\r\n      ],\r\n      \"Attachments\": [],\r\n      \"IsChapterEndingCandidate\": false,\r\n      \"EndingKey\": \"\",\r\n      \"DesignerNote\": \"\",\r\n      \"Position\": {\r\n        \"X\": 0,\r\n        \"Y\": 0\r\n      }\r\n    },\r\n    {\r\n      \"EpisodeId\": \"z\",\r\n      \"Title\": \"z\",\r\n      \"IndexText\": \"\",\r\n      \"Kind\": \"Main\",\r\n      \"DialogueEntryId\": \"z\",\r\n      \"VisibleConditions\": [],\r\n      \"UnlockConditions\": [],\r\n      \"NextOptions\": [],\r\n      \"Attachments\": [],\r\n      \"IsChapterEndingCandidate\": false,\r\n      \"EndingKey\": \"\",\r\n      \"DesignerNote\": \"\",\r\n      \"Position\": {\r\n        \"X\": 0,\r\n        \"Y\": 0\r\n      }\r\n    }\r\n  ],\r\n  \"EndingRules\": []\r\n}",
+    "reachable": [
+      "a",
+      "x",
+      "y",
+      "z"
+    ],
+    "complete": true,
+    "spans": {
+      "a": [
+        {
+          "Key": "trust",
+          "Minimum": 0,
+          "Maximum": 0
+        }
+      ],
+      "x": [
+        {
+          "Key": "trust",
+          "Minimum": 3,
+          "Maximum": 3
+        }
+      ],
+      "y": [
+        {
+          "Key": "trust",
+          "Minimum": -1,
+          "Maximum": -1
+        }
+      ],
+      "z": [
+        {
+          "Key": "trust",
+          "Minimum": -1,
+          "Maximum": 3
+        }
+      ]
+    }
+  },
+  {
+    "name": "관문",
+    "chapterJson": "{\r\n  \"ChapterId\": \"c3\",\r\n  \"DisplayName\": \"c3\",\r\n  \"StartEpisodeId\": \"a\",\r\n  \"Stats\": [\r\n    {\r\n      \"Key\": \"trust\",\r\n      \"DisplayName\": \"trust\",\r\n      \"Type\": \"Number\",\r\n      \"Initial\": 0,\r\n      \"Minimum\": 0,\r\n      \"Maximum\": 10\r\n    }\r\n  ],\r\n  \"Nodes\": [\r\n    {\r\n      \"EpisodeId\": \"a\",\r\n      \"Title\": \"a\",\r\n      \"IndexText\": \"\",\r\n      \"Kind\": \"Main\",\r\n      \"DialogueEntryId\": \"a\",\r\n      \"VisibleConditions\": [],\r\n      \"UnlockConditions\": [],\r\n      \"NextOptions\": [\r\n        {\r\n          \"TargetEpisodeId\": \"x\",\r\n          \"ChoiceLabel\": \"올린다\",\r\n          \"VisibleConditions\": [],\r\n          \"Conditions\": [],\r\n          \"HideWhenLocked\": false,\r\n          \"LockedReasonText\": \"\",\r\n          \"StatChanges\": [\r\n            {\r\n              \"Key\": \"trust\",\r\n              \"Amount\": 5\r\n            }\r\n          ]\r\n        },\r\n        {\r\n          \"TargetEpisodeId\": \"y\",\r\n          \"ChoiceLabel\": \"안올린다\",\r\n          \"VisibleConditions\": [],\r\n          \"Conditions\": [],\r\n          \"HideWhenLocked\": false,\r\n          \"LockedReasonText\": \"\",\r\n          \"StatChanges\": []\r\n        }\r\n      ],\r\n      \"Attachments\": [],\r\n      \"IsChapterEndingCandidate\": false,\r\n      \"EndingKey\": \"\",\r\n      \"DesignerNote\": \"\",\r\n      \"Position\": {\r\n        \"X\": 0,\r\n        \"Y\": 0\r\n      }\r\n    },\r\n    {\r\n      \"EpisodeId\": \"x\",\r\n      \"Title\": \"x\",\r\n      \"IndexText\": \"\",\r\n      \"Kind\": \"Main\",\r\n      \"DialogueEntryId\": \"x\",\r\n      \"VisibleConditions\": [],\r\n      \"UnlockConditions\": [],\r\n      \"NextOptions\": [\r\n        {\r\n          \"TargetEpisodeId\": \"gate\",\r\n          \"ChoiceLabel\": \"문\",\r\n          \"VisibleConditions\": [],\r\n          \"Conditions\": [\r\n            {\r\n              \"Kind\": \"Stat\",\r\n              \"Key\": \"trust\",\r\n              \"Op\": \"GreaterOrEqual\",\r\n              \"IntValue\": 5\r\n            }\r\n          ],\r\n          \"HideWhenLocked\": false,\r\n          \"LockedReasonText\": \"\",\r\n          \"StatChanges\": []\r\n        }\r\n      ],\r\n      \"Attachments\": [],\r\n      \"IsChapterEndingCandidate\": false,\r\n      \"EndingKey\": \"\",\r\n      \"DesignerNote\": \"\",\r\n      \"Position\": {\r\n        \"X\": 0,\r\n        \"Y\": 0\r\n      }\r\n    },\r\n    {\r\n      \"EpisodeId\": \"y\",\r\n      \"Title\": \"y\",\r\n      \"IndexText\": \"\",\r\n      \"Kind\": \"Main\",\r\n      \"DialogueEntryId\": \"y\",\r\n      \"VisibleConditions\": [],\r\n      \"UnlockConditions\": [],\r\n      \"NextOptions\": [\r\n        {\r\n          \"TargetEpisodeId\": \"gate\",\r\n          \"ChoiceLabel\": \"문2\",\r\n          \"VisibleConditions\": [],\r\n          \"Conditions\": [\r\n            {\r\n              \"Kind\": \"Stat\",\r\n              \"Key\": \"trust\",\r\n              \"Op\": \"GreaterOrEqual\",\r\n              \"IntValue\": 5\r\n            }\r\n          ],\r\n          \"HideWhenLocked\": false,\r\n          \"LockedReasonText\": \"\",\r\n          \"StatChanges\": []\r\n        }\r\n      ],\r\n      \"Attachments\": [],\r\n      \"IsChapterEndingCandidate\": false,\r\n      \"EndingKey\": \"\",\r\n      \"DesignerNote\": \"\",\r\n      \"Position\": {\r\n        \"X\": 0,\r\n        \"Y\": 0\r\n      }\r\n    },\r\n    {\r\n      \"EpisodeId\": \"gate\",\r\n      \"Title\": \"gate\",\r\n      \"IndexText\": \"\",\r\n      \"Kind\": \"Main\",\r\n      \"DialogueEntryId\": \"gate\",\r\n      \"VisibleConditions\": [],\r\n      \"UnlockConditions\": [],\r\n      \"NextOptions\": [],\r\n      \"Attachments\": [],\r\n      \"IsChapterEndingCandidate\": false,\r\n      \"EndingKey\": \"\",\r\n      \"DesignerNote\": \"\",\r\n      \"Position\": {\r\n        \"X\": 0,\r\n        \"Y\": 0\r\n      }\r\n    }\r\n  ],\r\n  \"EndingRules\": []\r\n}",
+    "reachable": [
+      "a",
+      "gate",
+      "x",
+      "y"
+    ],
+    "complete": true,
+    "spans": {
+      "a": [
+        {
+          "Key": "trust",
+          "Minimum": 0,
+          "Maximum": 0
+        }
+      ],
+      "gate": [
+        {
+          "Key": "trust",
+          "Minimum": 5,
+          "Maximum": 5
+        }
+      ],
+      "x": [
+        {
+          "Key": "trust",
+          "Minimum": 5,
+          "Maximum": 5
+        }
+      ],
+      "y": [
+        {
+          "Key": "trust",
+          "Minimum": 0,
+          "Maximum": 0
+        }
+      ]
+    }
+  },
+  {
+    "name": "도달불가",
+    "chapterJson": "{\r\n  \"ChapterId\": \"c4\",\r\n  \"DisplayName\": \"c4\",\r\n  \"StartEpisodeId\": \"a\",\r\n  \"Stats\": [\r\n    {\r\n      \"Key\": \"trust\",\r\n      \"DisplayName\": \"trust\",\r\n      \"Type\": \"Number\",\r\n      \"Initial\": 0,\r\n      \"Minimum\": 0,\r\n      \"Maximum\": 10\r\n    }\r\n  ],\r\n  \"Nodes\": [\r\n    {\r\n      \"EpisodeId\": \"a\",\r\n      \"Title\": \"a\",\r\n      \"IndexText\": \"\",\r\n      \"Kind\": \"Main\",\r\n      \"DialogueEntryId\": \"a\",\r\n      \"VisibleConditions\": [],\r\n      \"UnlockConditions\": [],\r\n      \"NextOptions\": [\r\n        {\r\n          \"TargetEpisodeId\": \"b\",\r\n          \"ChoiceLabel\": \"간다\",\r\n          \"VisibleConditions\": [],\r\n          \"Conditions\": [],\r\n          \"HideWhenLocked\": false,\r\n          \"LockedReasonText\": \"\",\r\n          \"StatChanges\": [\r\n            {\r\n              \"Key\": \"trust\",\r\n              \"Amount\": 2\r\n            }\r\n          ]\r\n        }\r\n      ],\r\n      \"Attachments\": [],\r\n      \"IsChapterEndingCandidate\": false,\r\n      \"EndingKey\": \"\",\r\n      \"DesignerNote\": \"\",\r\n      \"Position\": {\r\n        \"X\": 0,\r\n        \"Y\": 0\r\n      }\r\n    },\r\n    {\r\n      \"EpisodeId\": \"b\",\r\n      \"Title\": \"b\",\r\n      \"IndexText\": \"\",\r\n      \"Kind\": \"Main\",\r\n      \"DialogueEntryId\": \"b\",\r\n      \"VisibleConditions\": [],\r\n      \"UnlockConditions\": [],\r\n      \"NextOptions\": [\r\n        {\r\n          \"TargetEpisodeId\": \"never\",\r\n          \"ChoiceLabel\": \"문\",\r\n          \"VisibleConditions\": [],\r\n          \"Conditions\": [\r\n            {\r\n              \"Kind\": \"Stat\",\r\n              \"Key\": \"trust\",\r\n              \"Op\": \"GreaterOrEqual\",\r\n              \"IntValue\": 9\r\n            }\r\n          ],\r\n          \"HideWhenLocked\": false,\r\n          \"LockedReasonText\": \"\",\r\n          \"StatChanges\": []\r\n        }\r\n      ],\r\n      \"Attachments\": [],\r\n      \"IsChapterEndingCandidate\": false,\r\n      \"EndingKey\": \"\",\r\n      \"DesignerNote\": \"\",\r\n      \"Position\": {\r\n        \"X\": 0,\r\n        \"Y\": 0\r\n      }\r\n    },\r\n    {\r\n      \"EpisodeId\": \"never\",\r\n      \"Title\": \"never\",\r\n      \"IndexText\": \"\",\r\n      \"Kind\": \"Main\",\r\n      \"DialogueEntryId\": \"never\",\r\n      \"VisibleConditions\": [],\r\n      \"UnlockConditions\": [],\r\n      \"NextOptions\": [],\r\n      \"Attachments\": [],\r\n      \"IsChapterEndingCandidate\": false,\r\n      \"EndingKey\": \"\",\r\n      \"DesignerNote\": \"\",\r\n      \"Position\": {\r\n        \"X\": 0,\r\n        \"Y\": 0\r\n      }\r\n    }\r\n  ],\r\n  \"EndingRules\": []\r\n}",
+    "reachable": [
+      "a",
+      "b"
+    ],
+    "complete": true,
+    "spans": {
+      "a": [
+        {
+          "Key": "trust",
+          "Minimum": 0,
+          "Maximum": 0
+        }
+      ],
+      "b": [
+        {
+          "Key": "trust",
+          "Minimum": 2,
+          "Maximum": 2
+        }
+      ]
+    }
+  },
+  {
+    "name": "cleared고정점",
+    "chapterJson": "{\r\n  \"ChapterId\": \"c5\",\r\n  \"DisplayName\": \"c5\",\r\n  \"StartEpisodeId\": \"a\",\r\n  \"Stats\": [\r\n    {\r\n      \"Key\": \"trust\",\r\n      \"DisplayName\": \"trust\",\r\n      \"Type\": \"Number\",\r\n      \"Initial\": 0,\r\n      \"Minimum\": 0,\r\n      \"Maximum\": 10\r\n    }\r\n  ],\r\n  \"Nodes\": [\r\n    {\r\n      \"EpisodeId\": \"a\",\r\n      \"Title\": \"a\",\r\n      \"IndexText\": \"\",\r\n      \"Kind\": \"Main\",\r\n      \"DialogueEntryId\": \"a\",\r\n      \"VisibleConditions\": [],\r\n      \"UnlockConditions\": [],\r\n      \"NextOptions\": [\r\n        {\r\n          \"TargetEpisodeId\": \"b\",\r\n          \"ChoiceLabel\": \"\",\r\n          \"VisibleConditions\": [],\r\n          \"Conditions\": [],\r\n          \"HideWhenLocked\": false,\r\n          \"LockedReasonText\": \"\",\r\n          \"StatChanges\": []\r\n        }\r\n      ],\r\n      \"Attachments\": [],\r\n      \"IsChapterEndingCandidate\": false,\r\n      \"EndingKey\": \"\",\r\n      \"DesignerNote\": \"\",\r\n      \"Position\": {\r\n        \"X\": 0,\r\n        \"Y\": 0\r\n      }\r\n    },\r\n    {\r\n      \"EpisodeId\": \"b\",\r\n      \"Title\": \"b\",\r\n      \"IndexText\": \"\",\r\n      \"Kind\": \"Main\",\r\n      \"DialogueEntryId\": \"b\",\r\n      \"VisibleConditions\": [],\r\n      \"UnlockConditions\": [],\r\n      \"NextOptions\": [\r\n        {\r\n          \"TargetEpisodeId\": \"c\",\r\n          \"ChoiceLabel\": \"문\",\r\n          \"VisibleConditions\": [],\r\n          \"Conditions\": [\r\n            {\r\n              \"Kind\": \"EpisodeCleared\",\r\n              \"Key\": \"b\",\r\n              \"Op\": \"Exists\"\r\n            }\r\n          ],\r\n          \"HideWhenLocked\": false,\r\n          \"LockedReasonText\": \"\",\r\n          \"StatChanges\": []\r\n        }\r\n      ],\r\n      \"Attachments\": [],\r\n      \"IsChapterEndingCandidate\": false,\r\n      \"EndingKey\": \"\",\r\n      \"DesignerNote\": \"\",\r\n      \"Position\": {\r\n        \"X\": 0,\r\n        \"Y\": 0\r\n      }\r\n    },\r\n    {\r\n      \"EpisodeId\": \"c\",\r\n      \"Title\": \"c\",\r\n      \"IndexText\": \"\",\r\n      \"Kind\": \"Main\",\r\n      \"DialogueEntryId\": \"c\",\r\n      \"VisibleConditions\": [],\r\n      \"UnlockConditions\": [],\r\n      \"NextOptions\": [],\r\n      \"Attachments\": [],\r\n      \"IsChapterEndingCandidate\": false,\r\n      \"EndingKey\": \"\",\r\n      \"DesignerNote\": \"\",\r\n      \"Position\": {\r\n        \"X\": 0,\r\n        \"Y\": 0\r\n      }\r\n    }\r\n  ],\r\n  \"EndingRules\": []\r\n}",
+    "reachable": [
+      "a",
+      "b",
+      "c"
+    ],
+    "complete": true,
+    "spans": {
+      "a": [
+        {
+          "Key": "trust",
+          "Minimum": 0,
+          "Maximum": 0
+        }
+      ],
+      "b": [
+        {
+          "Key": "trust",
+          "Minimum": 0,
+          "Maximum": 0
+        }
+      ],
+      "c": [
+        {
+          "Key": "trust",
+          "Minimum": 0,
+          "Maximum": 0
+        }
+      ]
+    }
+  },
+  {
+    "name": "부착",
+    "chapterJson": "{\r\n  \"ChapterId\": \"c6\",\r\n  \"DisplayName\": \"c6\",\r\n  \"StartEpisodeId\": \"a\",\r\n  \"Stats\": [\r\n    {\r\n      \"Key\": \"trust\",\r\n      \"DisplayName\": \"trust\",\r\n      \"Type\": \"Number\",\r\n      \"Initial\": 0,\r\n      \"Minimum\": 0,\r\n      \"Maximum\": 10\r\n    }\r\n  ],\r\n  \"Nodes\": [\r\n    {\r\n      \"EpisodeId\": \"a\",\r\n      \"Title\": \"a\",\r\n      \"IndexText\": \"\",\r\n      \"Kind\": \"Main\",\r\n      \"DialogueEntryId\": \"a\",\r\n      \"VisibleConditions\": [],\r\n      \"UnlockConditions\": [],\r\n      \"NextOptions\": [\r\n        {\r\n          \"TargetEpisodeId\": \"b\",\r\n          \"ChoiceLabel\": \"\",\r\n          \"VisibleConditions\": [],\r\n          \"Conditions\": [],\r\n          \"HideWhenLocked\": false,\r\n          \"LockedReasonText\": \"\",\r\n          \"StatChanges\": [\r\n            {\r\n              \"Key\": \"trust\",\r\n              \"Amount\": 2\r\n            }\r\n          ]\r\n        }\r\n      ],\r\n      \"Attachments\": [],\r\n      \"IsChapterEndingCandidate\": false,\r\n      \"EndingKey\": \"\",\r\n      \"DesignerNote\": \"\",\r\n      \"Position\": {\r\n        \"X\": 0,\r\n        \"Y\": 0\r\n      }\r\n    },\r\n    {\r\n      \"EpisodeId\": \"b\",\r\n      \"Title\": \"b\",\r\n      \"IndexText\": \"\",\r\n      \"Kind\": \"Main\",\r\n      \"DialogueEntryId\": \"b\",\r\n      \"VisibleConditions\": [],\r\n      \"UnlockConditions\": [],\r\n      \"NextOptions\": [\r\n        {\r\n          \"TargetEpisodeId\": \"side2\",\r\n          \"ChoiceLabel\": \"곁\",\r\n          \"VisibleConditions\": [],\r\n          \"Conditions\": [\r\n            {\r\n              \"Kind\": \"Stat\",\r\n              \"Key\": \"trust\",\r\n              \"Op\": \"GreaterOrEqual\",\r\n              \"IntValue\": 9\r\n            }\r\n          ],\r\n          \"HideWhenLocked\": false,\r\n          \"LockedReasonText\": \"\",\r\n          \"StatChanges\": []\r\n        }\r\n      ],\r\n      \"Attachments\": [],\r\n      \"IsChapterEndingCandidate\": false,\r\n      \"EndingKey\": \"\",\r\n      \"DesignerNote\": \"\",\r\n      \"Position\": {\r\n        \"X\": 0,\r\n        \"Y\": 0\r\n      }\r\n    },\r\n    {\r\n      \"EpisodeId\": \"side1\",\r\n      \"Title\": \"side1\",\r\n      \"IndexText\": \"\",\r\n      \"Kind\": \"Attachment\",\r\n      \"DialogueEntryId\": \"side1\",\r\n      \"VisibleConditions\": [],\r\n      \"UnlockConditions\": [],\r\n      \"NextOptions\": [],\r\n      \"Attachments\": [],\r\n      \"IsChapterEndingCandidate\": false,\r\n      \"EndingKey\": \"\",\r\n      \"DesignerNote\": \"\",\r\n      \"Position\": {\r\n        \"X\": 0,\r\n        \"Y\": 0\r\n      }\r\n    },\r\n    {\r\n      \"EpisodeId\": \"side2\",\r\n      \"Title\": \"side2\",\r\n      \"IndexText\": \"\",\r\n      \"Kind\": \"Attachment\",\r\n      \"DialogueEntryId\": \"side2\",\r\n      \"VisibleConditions\": [],\r\n      \"UnlockConditions\": [],\r\n      \"NextOptions\": [],\r\n      \"Attachments\": [],\r\n      \"IsChapterEndingCandidate\": false,\r\n      \"EndingKey\": \"\",\r\n      \"DesignerNote\": \"\",\r\n      \"Position\": {\r\n        \"X\": 0,\r\n        \"Y\": 0\r\n      }\r\n    }\r\n  ],\r\n  \"EndingRules\": []\r\n}",
+    "reachable": [
+      "a",
+      "b",
+      "side1"
+    ],
+    "complete": true,
+    "spans": {
+      "a": [
+        {
+          "Key": "trust",
+          "Minimum": 0,
+          "Maximum": 0
+        }
+      ],
+      "b": [
+        {
+          "Key": "trust",
+          "Minimum": 2,
+          "Maximum": 2
+        }
+      ]
+    }
+  },
+  {
+    "name": "clamp",
+    "chapterJson": "{\r\n  \"ChapterId\": \"c7\",\r\n  \"DisplayName\": \"c7\",\r\n  \"StartEpisodeId\": \"a\",\r\n  \"Stats\": [\r\n    {\r\n      \"Key\": \"trust\",\r\n      \"DisplayName\": \"trust\",\r\n      \"Type\": \"Number\",\r\n      \"Initial\": 2,\r\n      \"Minimum\": 0,\r\n      \"Maximum\": 5\r\n    }\r\n  ],\r\n  \"Nodes\": [\r\n    {\r\n      \"EpisodeId\": \"a\",\r\n      \"Title\": \"a\",\r\n      \"IndexText\": \"\",\r\n      \"Kind\": \"Main\",\r\n      \"DialogueEntryId\": \"a\",\r\n      \"VisibleConditions\": [],\r\n      \"UnlockConditions\": [],\r\n      \"NextOptions\": [\r\n        {\r\n          \"TargetEpisodeId\": \"b\",\r\n          \"ChoiceLabel\": \"\",\r\n          \"VisibleConditions\": [],\r\n          \"Conditions\": [],\r\n          \"HideWhenLocked\": false,\r\n          \"LockedReasonText\": \"\",\r\n          \"StatChanges\": [\r\n            {\r\n              \"Key\": \"trust\",\r\n              \"Amount\": 99\r\n            }\r\n          ]\r\n        }\r\n      ],\r\n      \"Attachments\": [],\r\n      \"IsChapterEndingCandidate\": false,\r\n      \"EndingKey\": \"\",\r\n      \"DesignerNote\": \"\",\r\n      \"Position\": {\r\n        \"X\": 0,\r\n        \"Y\": 0\r\n      }\r\n    },\r\n    {\r\n      \"EpisodeId\": \"b\",\r\n      \"Title\": \"b\",\r\n      \"IndexText\": \"\",\r\n      \"Kind\": \"Main\",\r\n      \"DialogueEntryId\": \"b\",\r\n      \"VisibleConditions\": [],\r\n      \"UnlockConditions\": [],\r\n      \"NextOptions\": [\r\n        {\r\n          \"TargetEpisodeId\": \"c\",\r\n          \"ChoiceLabel\": \"\",\r\n          \"VisibleConditions\": [],\r\n          \"Conditions\": [],\r\n          \"HideWhenLocked\": false,\r\n          \"LockedReasonText\": \"\",\r\n          \"StatChanges\": [\r\n            {\r\n              \"Key\": \"trust\",\r\n              \"Amount\": -99\r\n            }\r\n          ]\r\n        }\r\n      ],\r\n      \"Attachments\": [],\r\n      \"IsChapterEndingCandidate\": false,\r\n      \"EndingKey\": \"\",\r\n      \"DesignerNote\": \"\",\r\n      \"Position\": {\r\n        \"X\": 0,\r\n        \"Y\": 0\r\n      }\r\n    },\r\n    {\r\n      \"EpisodeId\": \"c\",\r\n      \"Title\": \"c\",\r\n      \"IndexText\": \"\",\r\n      \"Kind\": \"Main\",\r\n      \"DialogueEntryId\": \"c\",\r\n      \"VisibleConditions\": [],\r\n      \"UnlockConditions\": [],\r\n      \"NextOptions\": [],\r\n      \"Attachments\": [],\r\n      \"IsChapterEndingCandidate\": false,\r\n      \"EndingKey\": \"\",\r\n      \"DesignerNote\": \"\",\r\n      \"Position\": {\r\n        \"X\": 0,\r\n        \"Y\": 0\r\n      }\r\n    }\r\n  ],\r\n  \"EndingRules\": []\r\n}",
+    "reachable": [
+      "a",
+      "b",
+      "c"
+    ],
+    "complete": true,
+    "spans": {
+      "a": [
+        {
+          "Key": "trust",
+          "Minimum": 2,
+          "Maximum": 2
+        }
+      ],
+      "b": [
+        {
+          "Key": "trust",
+          "Minimum": 5,
+          "Maximum": 5
+        }
+      ],
+      "c": [
+        {
+          "Key": "trust",
+          "Minimum": 0,
+          "Maximum": 0
+        }
+      ]
+    }
+  }
+]

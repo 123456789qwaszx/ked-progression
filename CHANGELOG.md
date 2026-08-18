@@ -37,7 +37,7 @@
 - `Tests/Fixtures/chapter-ch01-sample.json` — 저작 쪽이 직접 만들어 보낸 표본
 - `Tests/Fixtures/chapter-sample-export.json` — 툴이 실제로 낸 챕터 JSON
 - `Tests/Fixtures/scenario-two-chapters.json` — 손으로 쓴 시나리오 (툴에 시나리오 저작이 없다)
-- 계약 테스트 120개
+- 계약 테스트 128개
 
 ### 변경 (호환 깨짐 — `0.x`라 지금이 가장 싸다)
 
