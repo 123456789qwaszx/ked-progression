@@ -264,5 +264,10 @@ D1이 그것을 전제로 설계됐다 — 챕터를 이으면 **ch01의 출구 
 | `ked-progression/Tests/ArchitectureWalkthroughTests.cs` | 흐름 전체가 한 화면 |
 | `ked-progression/Tests/RealExportLoadTests.cs` | **툴 산출물이 실린다는 증거** |
 
-테스트 115개 · 빌드 경고 0 · 게이트 G0~G3 닫힘(원칙 · 시나리오 · 실데이터 · 챕터 연결).
-남은 것은 유저 데이터(G4)와 증명 이관(G5) 둘.
+테스트 140개 · 빌드 경고 0 · **게이트 여섯이 전부 닫혔다.**
+
+원칙 · 시나리오 층 · 실데이터 · 챕터 연결 · 유저 데이터 · 도달성 증명 이관까지.
+증명은 **그쪽 `ChapterReachabilityProver`를 그대로 돌려 뽑은 코퍼스**로 등가성을 고정했다
+(케이스 일곱 · `Tests/Fixtures/reachability-oracle.json`).
+
+→ **이쪽이 그쪽을 막는 것은 이제 없다.** 남은 것은 §1·§3·§5의 저작 쪽 항목들이다.
