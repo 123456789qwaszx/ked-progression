@@ -4,8 +4,9 @@
 (`dotnet test Tests/Ked.Progression.Tests.csproj`)
 저장소: `C:\Users\river\Documents\GitHub\ked-progression` · https://github.com/123456789qwaszx/ked-progression
 
-> **⚠ 이 저장소의 작업이 아직 하나도 커밋되지 않았다.**
-> 새 파일 20개 + 수정 8개가 작업 트리에만 있다. 이어받기 전에 커밋부터 하는 것이 안전하다.
+브랜치 `dev` — 논리 단위 커밋 5개(`fb5ea44` 모델 · `5a75152` 전이 · `6ea7cf4` 로더 ·
+`ec36d8e` 관통 · `3e1c1a9` 문서). **각 커밋을 따로 빌드·테스트해 확인했으므로 bisect가 성립한다.**
+아직 푸시하지 않았다.
 
 ---
 
@@ -28,6 +29,7 @@
 | **이 문서** | 지금 무엇이 참인가 · 함정 · 부채 | 세션 시작할 때 |
 | [`../CHANGELOG.md`](../CHANGELOG.md) | 결정 기록 (왜 그렇게 했나) | 판단이 뒤집히려 할 때 |
 | [`model-draft.md`](model-draft.md) | **v0 기록.** architecture.md가 대체했다 | 역사만 |
+| [`vntool-handoff.md`](vntool-handoff.md) | **저작 도구 쪽에 보내는 것** — 계약 · 요청 · 픽스처 재생성 | 툴을 고칠 때 |
 | `java-start/docs/runtime-contract.md` §G | 계약 원본 | **충돌하면 계약서가 이긴다** |
 
 **갈리면**: 코드 > 계약서 > architecture.md > 이 문서.
