@@ -1,5 +1,17 @@
 # Ked.Progression — 모델·계약 초안 (v0, 검토용)
 
+> **⛔ 이 문서는 v0 기록이다 (2026-08-18).** 타입의 정본은 [`architecture.md`](architecture.md)로
+> 옮겨 갔다. 아래 셋은 그쪽에서 **뒤집혔다** — `EndingRules`는 모양이 있고(런타임
+> `ChapterEndingRule`), 스탯 정의의 소유는 시나리오이며, 조건·선택지는 공개 생성자 대신
+> 팩토리만 연다. **읽기 전에 architecture.md를 먼저 볼 것.**
+
+> **⚠ §3.1~3.4는 이제 코드가 있다 (2026-08-17).** 스케치와 실제가 갈리면 **코드가 이긴다** —
+> `Runtime/ChapterProgression.cs` · `EpisodeNode.cs` · `EpisodeOption.cs`.
+> 이 문서는 **왜 그 모양인지**를 남기는 자리로 남는다. 갈린 곳 둘:
+> `EndingRules`는 모양이 없어 타입을 만들지 않았고(handoff §3-1),
+> `ChapterProgression`은 스케치에 없던 챕터 전체 불변식을 생성자에서 강제한다.
+> §3.6(로더)과 §5는 아직 초안 그대로다.
+
 챕터·에피소드 진행 층. `runtime-contract.md` §G를 **문서에서 타입으로** 옮긴 것.
 
 > **왜 이 패키지가 있는가**

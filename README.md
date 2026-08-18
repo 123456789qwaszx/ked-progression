@@ -32,10 +32,20 @@
 
 ---
 
-## 현재 상태 — `0.1.0`, 껍데기
+## 현재 상태 — `0.1.0` 태그 이후, 미태그
 
-**코드가 아니라 배선이 들어 있다.** 지금 있는 것은 `ComparisonOp` 하나와 그 계약 테스트뿐이다.
-모델 스케치는 [`docs/model-draft.md`](docs/model-draft.md)에 있고, 아직 **검토 대기**다.
+**진행 층이 돈다.** 저작 도구가 낸 실제 챕터 JSON이 오류 0으로 실리고, 시나리오 → 챕터 →
+에피소드가 이어지며 **스탯이 챕터를 넘어간다.** 테스트 115개.
+
+**아직 저장되지 않는다.** `ProgressionState`가 세이브가 담을 모양이지만 굽고 되읽는 경로가
+없다 — 그것과 도달성 증명 이관이 남았다.
+
+| 먼저 볼 것 | |
+|---|---|
+| [`docs/architecture.md`](docs/architecture.md) | **타입의 정본** — 원칙 다섯과 실제 형태 |
+| [`docs/handoff.md`](docs/handoff.md) | 지금 무엇이 참인가 · 함정 · 부채 |
+| [`docs/work-plan.md`](docs/work-plan.md) | 순서 · 게이트 · 남은 결정 |
+| `Tests/ArchitectureWalkthroughTests.cs` | 흐름 전체가 한 화면 |
 
 `0.x` 동안은 공개 표면을 약속하지 않는다. 자유롭게 깨도 되는 구간이다.
 
