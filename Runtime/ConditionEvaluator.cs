@@ -18,7 +18,12 @@ namespace Ked.Progression
             switch (condition.Kind)
             {
                 case ConditionKind.EpisodeCleared:
-                    return EvaluateEpisodeCleared(condition, state);
+                    // 연산은 볼 필요가 없다 — 팩토리가 Exists 말고는 만들 수 없게 한다.
+                    // 구 런타임은 여기서 Op를 switch하다가 Equal을 exists로 뭉개 반대로 돌았다.
+                    return state.IsEpisodeCleared(condition.Key);
+
+                case ConditionKind.ChapterCleared:
+                    return state.IsChapterCleared(condition.Key);
 
                 case ConditionKind.Stat:
                     return EvaluateStat(condition, state);
@@ -29,20 +34,6 @@ namespace Ked.Progression
                     throw new NotSupportedException(
                         $"처리되지 않은 조건 종류 '{condition.Kind}'.");
             }
-        }
-
-        private static bool EvaluateEpisodeCleared(
-            in ProgressionCondition condition, ProgressionState state)
-        {
-            // EpisodeCleared는 값 비교가 아니다 — 클리어했는가만 묻는다.
-            if (condition.Op != ComparisonOp.Exists)
-            {
-                throw new NotSupportedException(
-                    $"EpisodeCleared 조건은 Exists만 쓴다. 받은 연산: {condition.Op}. " +
-                    "다른 연산이 데이터에 나온다면 저작 쪽 출력을 먼저 확인할 것.");
-            }
-
-            return state.IsCleared(condition.Key);
         }
 
         private static bool EvaluateStat(
