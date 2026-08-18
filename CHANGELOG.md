@@ -32,9 +32,12 @@
 - `ScenarioTransition` · `ScenarioAdvance` — 챕터가 끝난 뒤 무엇이 일어나는가
 - `ProgressionState.CommitChapterEnding` · `ChapterEnding` · `EndingHistory` — 챕터 경계의 트랜잭션
 - `ScenarioProgressionDto` · `EndingRuleDto` + `ProgressionLoader.Load(ScenarioProgressionDto)`
+- `EpisodeOption.ViaNodeId` — **연출을 매다는 자리** (계약서 §H-3). 이 길을 지나며 거쳐 갈
+  Yarn 노드의 이름이고, 에피소드 사이 트랜지션 연출과 엔딩 연출이 같은 칸을 쓴다
+- `Tests/Fixtures/chapter-ch01-sample.json` — 저작 쪽이 직접 만들어 보낸 표본
 - `Tests/Fixtures/chapter-sample-export.json` — 툴이 실제로 낸 챕터 JSON
 - `Tests/Fixtures/scenario-two-chapters.json` — 손으로 쓴 시나리오 (툴에 시나리오 저작이 없다)
-- 계약 테스트 113개
+- 계약 테스트 120개
 
 ### 변경 (호환 깨짐 — `0.x`라 지금이 가장 싸다)
 
@@ -63,6 +66,20 @@
 
 ### 결정
 
+- **연출은 간선의 종류와 직교한다.** `ViaNodeId`는 선택지든 자동 진행이든 붙는다 —
+  관문은 자동 진행에 뜻이 없어 인자를 뺐지만, 말없이 넘어가는 자리가 오히려 트랜지션
+  연출의 주 무대다. 팀장이 요구한 "에피소드 사이 트랜지션"과 엔딩 연출이 **같은 기능의
+  두 쓰임**이 된다
+- **`ViaNodeId`에는 이름 하나만 들어간다.** 지속시간·이징·색 같은 파라미터가 붙기 시작하면
+  그때가 경계면이 진짜로 넓어지는 순간이다 — 연출의 파라미터는 연출 쪽에서 산다.
+  경계면이 셋(`DialogueEntryId` · `ViaNodeId` · `EndingKey`)이 됐지만 **전부 같은 종류**
+  (호스트가 푸는 이름)라 층 구조는 그대로다
+- **엔딩키는 노드에 그대로 둔다 — D2 유지.** 저작 쪽이 "엑셀 간선에 엔딩키를 적고
+  exporter가 도착 에피소드 노드에 싣는다"를 제안했고 받아들였다. **저작 표면은 넉넉하게,
+  계약 표면은 좁게** — 기획자는 간선 한 행에 종류·엔딩키·연출을 함께 적고, 계약은
+  `ViaNodeId` 하나만 는다.
+  ⚠ 대가: *"같은 엔딩 에피소드로 들어오는 간선들이 서로 다른 엔딩키를 가지면 거부"*를
+  **저작 쪽만 볼 수 있다**(JSON에 오면 이미 키가 하나다). 검증 소유 경계의 유일한 예외다
 - **`OptionVisibility`에 `Hidden`을 두지 않았다.** §G5는 표시조건 미달을 "목록에 만들지
   않는다"고 적는데, 그러면 숨긴 것은 목록에 **없는 것**이지 `Hidden`으로 표시된 항목이
   아니다. 목록에 넣어 두면 호스트가 전부 그리다 숨겨야 할 것을 보여 주는 사고가 열리고,

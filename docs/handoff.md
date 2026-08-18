@@ -1,11 +1,12 @@
 # Ked.Progression 현재 상태 — 이어받는 세션을 위한 인수인계
 
-기준: 2026-08-18 · 테스트 **115 통과, 실패 0** · 빌드 **경고 0**
+기준: 2026-08-18 · 테스트 **120 통과, 실패 0** · 빌드 **경고 0**
 (`dotnet test Tests/Ked.Progression.Tests.csproj`)
 저장소: `C:\Users\river\Documents\GitHub\ked-progression` · https://github.com/123456789qwaszx/ked-progression
 
-브랜치 `dev` — 논리 단위 커밋 5개(`fb5ea44` 모델 · `5a75152` 전이 · `6ea7cf4` 로더 ·
-`ec36d8e` 관통 · `3e1c1a9` 문서). **각 커밋을 따로 빌드·테스트해 확인했으므로 bisect가 성립한다.**
+브랜치 `dev` — 논리 단위 커밋(`fb5ea44` 모델 · `5a75152` 전이 · `6ea7cf4` 로더 ·
+`ec36d8e` 관통 · `3e1c1a9` 문서 · 이후 저작 쪽 회신 반영). **앞 넷은 따로 빌드·테스트해
+확인했으므로 bisect가 성립한다.**
 아직 푸시하지 않았다.
 
 ---
@@ -188,7 +189,7 @@ UPM git 패키지는 유니티가 저장소에 `.meta`를 쓸 수 없다. **커�
 | X1 | VnTool | exporter가 `Stats`를 낸다 (`Int`→`Number` 이름 번역) | ✅ 닫힘 (`559a1fc`) |
 | X2 | VnTool | exporter가 `EndingRules`를 낸다 — `Outcome`을 **명시 문자열**로 | 규격은 정해짐 |
 | X3 | VnTool | `간선` 시트에 `종류` 열 (D5) | 미정 — 없으면 로더가 경고로 대체 |
-| X7 | VnTool | `Option.ViaNodeId` (§G8) — 저작에서는 되는데 발행 경로에 자리가 없다 | 저작 쪽이 **지금이 그 자리**라고 판단. 모델에 칸 더하는 비용은 0 |
+| X7 ✅ | VnTool | `Option.ViaNodeId` (§H-3) — **연출을 매다는 자리** | 이쪽 칸은 들어갔다. 남은 것은 저작 UI와 발행 경로 |
 | X4 | VnTool | 시나리오 저작 | 손으로 쓴 JSON으로 먼저 간다 |
 | X5 | 런타임 | 진행 블록을 세이브에 싣기 | G4 뒤 |
 | X6 | 여기 | `.meta` 생성·커밋 | §6-3 |

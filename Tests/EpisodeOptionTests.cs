@@ -49,7 +49,14 @@ namespace Ked.Progression.Tests
 
             string[] parameters = auto.GetParameters().Select(p => p.Name).ToArray();
 
-            Assert.That(parameters, Is.EqualTo(new[] { "targetEpisodeId", "statChanges" }));
+            // 목록을 통째로 고정하지 않는다 — 연출(viaNodeId)처럼 종류와 직교하는 인자는
+            // 앞으로도 늘 수 있고, 그때마다 이 테스트가 깨지면 무엇을 지키려던 건지 흐려진다.
+            // 지키려는 것은 **관문이 달릴 자리가 없다**는 것 하나다.
+            Assert.That(parameters, Does.Not.Contain("conditions"));
+            Assert.That(parameters, Does.Not.Contain("visibleConditions"));
+            Assert.That(parameters, Does.Not.Contain("hideWhenLocked"));
+            Assert.That(parameters, Does.Not.Contain("lockedReasonText"));
+            Assert.That(parameters, Does.Not.Contain("choiceLabel"));
 
             // 문구가 있으면 같은 관문이 정상이다 — 관문 자체가 금지된 것이 아니다.
             Assert.DoesNotThrow(() =>
@@ -100,6 +107,46 @@ namespace Ked.Progression.Tests
             Assert.That(option.Conditions, Is.Empty);
             Assert.That(option.StatChanges, Is.Empty);
             Assert.That(option.LockedReasonText, Is.EqualTo(string.Empty));
+        }
+
+        // ── 연출을 매다는 자리 (§H-3) ────────────────────────────────
+
+        [Test]
+        public void 연출은_간선의_종류와_직교한다()
+        {
+            // 관문은 자동 진행에 뜻이 없어 인자를 뺐지만, 연출은 다르다 — 말없이 넘어가는
+            // 자리가 오히려 트랜지션 연출의 주 무대다. 팀장이 요구한 "에피소드 사이
+            // 트랜지션"이 여기서 산다.
+            EpisodeOption choice =
+                EpisodeOption.Choice("믿는다", "ep_02", viaNodeId: "fade_trust");
+
+            EpisodeOption auto = EpisodeOption.Auto("ep_02", viaNodeId: "fade_cold");
+
+            Assert.That(choice.ViaNodeId, Is.EqualTo("fade_trust"));
+            Assert.That(auto.ViaNodeId, Is.EqualTo("fade_cold"));
+            Assert.That(choice.HasVia, Is.True);
+            Assert.That(auto.HasVia, Is.True);
+        }
+
+        [Test]
+        public void 연출은_없어도_된다()
+        {
+            EpisodeOption plain = EpisodeOption.Choice("떠난다", "ep_02");
+
+            Assert.That(plain.HasVia, Is.False);
+            Assert.That(plain.ViaNodeId, Is.EqualTo(string.Empty), "null이 새어 나오지 않는다");
+        }
+
+        [Test]
+        public void 연출에는_이름_하나만_들어간다()
+        {
+            // ⚠ 지속시간·이징·색 같은 파라미터가 여기 붙기 시작하면 그때가 경계면이 진짜로
+            // 넓어지는 순간이다. 연출의 파라미터는 연출 쪽에서 산다.
+            //
+            // 이 테스트가 깨진다면 칸이 문자열에서 다른 무엇으로 바뀐 것이다 — 그때가
+            // 결정할 때다.
+            Assert.That(typeof(EpisodeOption).GetProperty("ViaNodeId").PropertyType,
+                Is.EqualTo(typeof(string)));
         }
 
         [Test]

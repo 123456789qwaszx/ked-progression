@@ -406,6 +406,26 @@ namespace Ked.Progression.Tests
         }
 
         [Test]
+        public void 연출_참조를_그대로_실어_온다()
+        {
+            // 이 패키지는 그 이름이 무엇을 가리키는지 모른다 — DialogueEntryId와 같은
+            // 종류의 통과값이다. 실재를 검사할 수단도 없다(연출 카탈로그가 없다).
+            ChapterProgressionDto dto = Chapter(
+                Node("ep_01", Choice("믿는다", "ep_02"), Auto("ep_02")),
+                Node("ep_02"));
+
+            dto.Nodes[0].NextOptions[0].ViaNodeId = "fade_trust";
+            dto.Nodes[0].NextOptions[1].ViaNodeId = "fade_cold";
+
+            ProgressionLoadResult result = ProgressionLoader.Load(dto);
+
+            Assert.That(result.HasErrors, Is.False, Text(result));
+            Assert.That(result.Chapter.Nodes[0].NextOptions[0].ViaNodeId, Is.EqualTo("fade_trust"));
+            Assert.That(result.Chapter.Nodes[0].NextOptions[1].ViaNodeId, Is.EqualTo("fade_cold"),
+                "자동 진행에도 붙는다 — 연출은 간선의 종류와 직교한다");
+        }
+
+        [Test]
         public void null_DTO도_진단으로_돌려준다()
         {
             ProgressionLoadResult result = ProgressionLoader.Load((ChapterProgressionDto)null);

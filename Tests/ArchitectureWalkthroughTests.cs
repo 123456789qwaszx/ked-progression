@@ -148,14 +148,16 @@ namespace Ked.Progression.Tests
         }
 
         [Test]
-        public void 층_사이를_지나는_것은_문자열_둘뿐이다()
+        public void 층_사이를_지나는_것은_이름_문자열뿐이다()
         {
             // 경계면의 크기가 이 설계의 이식성 전부다. 넓히는 변경은 반려한다.
             //
-            //   진행 → 대사   : EpisodeNode.DialogueEntryId   (Yarn 노드 이름 등)
+            //   진행 → 대사   : EpisodeNode.DialogueEntryId   (재생할 대본)
+            //   진행 → 연출   : EpisodeOption.ViaNodeId       (지나며 거쳐 갈 것)
             //   에피소드 → 챕터: EpisodeNode.EndingKey         (어느 엔딩으로 끝났나)
             //
-            // 이 패키지는 둘 다 **내용을 모른다.** 그래서 대사 층이 무엇이든 붙는다.
+            // 셋 다 **호스트가 푸는 이름 하나**다. 종류가 늘어난 게 아니라 같은 종류가
+            // 하나 더 는 것이라 층 구조는 그대로다. 이 패키지는 셋 다 내용을 모른다.
             ScenarioProgression scenario = ProgressionLoader.Load(ReadScenario()).Scenario;
             ChapterProgression chapter = scenario.StartChapter;
 
@@ -165,9 +167,14 @@ namespace Ked.Progression.Tests
                     .Select(node => node.EndingKey),
                 Is.EqualTo(new[] { "ch01_done" }));
 
-            // 대사 층의 어휘가 이 패키지에 하나도 없다는 것이 위 둘의 다른 표현이다.
+            // 대사 층의 어휘가 이 패키지에 하나도 없다는 것이 위의 다른 표현이다.
             Assert.That(typeof(EpisodeNode).GetProperty("Lines"), Is.Null);
             Assert.That(typeof(EpisodeNode).GetProperty("Speaker"), Is.Null);
+
+            // 연출 층도 마찬가지 — 이름만 오고 파라미터는 안 온다.
+            Assert.That(typeof(EpisodeOption).GetProperty("ViaNodeId").PropertyType,
+                Is.EqualTo(typeof(string)));
+            Assert.That(typeof(EpisodeOption).GetProperty("TransitionDuration"), Is.Null);
         }
 
         // ── 그릇 ────────────────────────────────────────────────────

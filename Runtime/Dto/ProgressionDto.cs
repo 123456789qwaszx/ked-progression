@@ -136,6 +136,15 @@ namespace Ked.Progression.Dto
         public bool HideWhenLocked { get; set; }
         public string LockedReasonText { get; set; }
         public List<StatChangeDto> StatChanges { get; set; }
+
+        /// <summary>
+        /// 연출을 매다는 자리(계약서 §H-3). 이 길을 지나며 먼저 거쳐 가는 <b>Yarn 노드</b>
+        /// 이름이고, 비어 있으면 곧장 간다. 에피소드 사이 트랜지션과 엔딩 연출이 같은 칸을 쓴다.
+        ///
+        /// ⚠ 이름 하나만 온다. 지속시간·이징 같은 파라미터가 여기 붙기 시작하면
+        /// 경계면이 넓어진다 — 그건 연출 쪽에서 산다.
+        /// </summary>
+        public string ViaNodeId { get; set; }
     }
 
     public sealed class ConditionDto

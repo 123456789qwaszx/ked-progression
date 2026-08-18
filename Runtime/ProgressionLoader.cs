@@ -417,7 +417,8 @@ namespace Ked.Progression
                             conditions,
                             dto.HideWhenLocked,
                             dto.LockedReasonText,
-                            changes));
+                            changes,
+                            dto.ViaNodeId));
 
                         continue;
                     }
@@ -444,7 +445,7 @@ namespace Ked.Progression
                     }
 
                     autoPaths.Add(at);
-                    options.Add(EpisodeOption.Auto(dto.TargetEpisodeId, changes));
+                    options.Add(EpisodeOption.Auto(dto.TargetEpisodeId, changes, dto.ViaNodeId));
                 }
                 catch (ArgumentException error)
                 {

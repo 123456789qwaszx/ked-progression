@@ -75,6 +75,29 @@ namespace Ked.Progression
         /// </summary>
         public IReadOnlyList<StatChange> StatChanges { get; }
 
+        /// <summary>
+        /// <b>연출을 매다는 자리</b>(계약서 §H-3). 이 길을 지나며 먼저 거쳐 가는 것의 이름이고,
+        /// 비어 있으면 그냥 곧장 간다.
+        ///
+        /// ⚠ <b>여기서 "노드"는 에피소드 노드가 아니라 Yarn 노드다.</b> 계약서 이름이
+        /// <c>ViaNodeId</c>라 그대로 쓴다 — 이름이 둘 도는 것이 이 모호함보다 나쁘다.
+        ///
+        /// 쓰임 둘이 같은 칸을 쓴다: <b>에피소드 사이 트랜지션 연출</b>(A→B로 넘어가며 페이드)과
+        /// <b>엔딩 연출</b>(엔딩 에피소드로 가는 길). 연출은 간선의 <i>종류와 직교</i>하므로
+        /// 자동 진행에도 붙는다 — 사실 말없이 넘어가는 자리가 트랜지션의 주 무대다.
+        ///
+        /// <b>이 패키지는 내용을 모른다.</b> <see cref="EpisodeNode.DialogueEntryId"/>와 같은
+        /// 종류의 경계면이고, 그래서 대사 층이 무엇이든 붙는다.
+        ///
+        /// ⚠ <b>여기에 들어갈 수 있는 것은 이름 하나뿐이다.</b> 지속시간·이징·색 같은
+        /// 파라미터를 붙이기 시작하면 그때가 경계면이 진짜로 넓어지는 순간이다 —
+        /// 연출의 파라미터는 연출 쪽에서 산다.
+        /// </summary>
+        public string ViaNodeId { get; }
+
+        /// <summary>이 길에 연출이 달려 있는가.</summary>
+        public bool HasVia => ViaNodeId.Length != 0;
+
         private EpisodeOption(
             OptionKind kind,
             string choiceLabel,
@@ -83,7 +106,8 @@ namespace Ked.Progression
             IReadOnlyList<ProgressionCondition> conditions,
             bool hideWhenLocked,
             string lockedReasonText,
-            IReadOnlyList<StatChange> statChanges)
+            IReadOnlyList<StatChange> statChanges,
+            string viaNodeId)
         {
             if (string.IsNullOrEmpty(targetEpisodeId))
             {
@@ -104,6 +128,7 @@ namespace Ked.Progression
 
             TargetEpisodeId = targetEpisodeId;
             HideWhenLocked = hideWhenLocked;
+            ViaNodeId = viaNodeId ?? string.Empty;
 
             ProgressionCondition.RequireAllConstructed(
                 VisibleConditions, nameof(visibleConditions));
@@ -121,7 +146,8 @@ namespace Ked.Progression
             IReadOnlyList<ProgressionCondition> conditions = null,
             bool hideWhenLocked = false,
             string lockedReasonText = null,
-            IReadOnlyList<StatChange> statChanges = null)
+            IReadOnlyList<StatChange> statChanges = null,
+            string viaNodeId = null)
         {
             if (string.IsNullOrEmpty(choiceLabel))
             {
@@ -139,7 +165,8 @@ namespace Ked.Progression
                 conditions,
                 hideWhenLocked,
                 lockedReasonText,
-                statChanges);
+                statChanges,
+                viaNodeId);
         }
 
         /// <summary>
@@ -149,10 +176,14 @@ namespace Ked.Progression
         /// 여기 관문이 달리면 그 관문마저 막혔을 때 챕터가 조용히 끝나 버린다. 작가는 자기가
         /// 이어 둔 길이 있으므로 끝날 리 없다고 믿는다 — v9가 이것을 오류로 못 박은 이유다.
         /// 인자를 없애면 그 오류가 애초에 표현되지 않는다.
+        ///
+        /// <b>다만 연출은 받는다</b>(<paramref name="viaNodeId"/>) — 관문과 달리 연출은 간선의
+        /// 종류와 직교하고, 말없이 넘어가는 이 자리가 트랜지션 연출의 주 무대다.
         /// </summary>
         public static EpisodeOption Auto(
             string targetEpisodeId,
-            IReadOnlyList<StatChange> statChanges = null)
+            IReadOnlyList<StatChange> statChanges = null,
+            string viaNodeId = null)
         {
             return new EpisodeOption(
                 OptionKind.AutoAdvance,
@@ -162,14 +193,19 @@ namespace Ked.Progression
                 null,
                 false,
                 null,
-                statChanges);
+                statChanges,
+                viaNodeId);
         }
 
         /// <summary>진단 메시지에 그대로 실린다.</summary>
-        public override string ToString() =>
-            Kind == OptionKind.AutoAdvance
-                ? $"(자동) → {TargetEpisodeId}"
-                : $"\"{ChoiceLabel}\" → {TargetEpisodeId}";
+        public override string ToString()
+        {
+            string via = HasVia ? $" ~{ViaNodeId}~" : string.Empty;
+
+            return Kind == OptionKind.AutoAdvance
+                ? $"(자동){via} → {TargetEpisodeId}"
+                : $"\"{ChoiceLabel}\"{via} → {TargetEpisodeId}";
+        }
 
     }
 }
