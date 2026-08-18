@@ -1,0 +1,118 @@
+{
+  "ScenarioId": "demo",
+  "DisplayName": "두 챕터 데모",
+  "StartChapterId": "ch01",
+
+  "Stats": [
+    { "Key": "trust", "DisplayName": "신뢰", "Type": "Number", "Initial": 0, "Minimum": 0, "Maximum": 5 }
+  ],
+
+  "Chapters": [
+    {
+      "ChapterId": "ch01",
+      "DisplayName": "1장 — 갈림길",
+      "StartEpisodeId": "ep_01",
+
+      "Stats": [
+        { "Key": "trust", "DisplayName": "신뢰", "Type": "Number", "Initial": 5, "Minimum": 0, "Maximum": 5 }
+      ],
+
+      "Nodes": [
+        {
+          "EpisodeId": "ep_01",
+          "Title": "만남",
+          "Kind": "Main",
+          "DialogueEntryId": "ch01_01",
+          "NextOptions": [
+            {
+              "TargetEpisodeId": "ep_end",
+              "ChoiceLabel": "믿는다",
+              "StatChanges": [ { "Key": "trust", "Amount": 2 } ]
+            },
+            {
+              "TargetEpisodeId": "ep_end",
+              "ChoiceLabel": "의심한다"
+            }
+          ]
+        },
+        {
+          "EpisodeId": "ep_end",
+          "Title": "그날 밤",
+          "Kind": "Main",
+          "DialogueEntryId": "ch01_end",
+          "IsChapterEndingCandidate": true,
+          "EndingKey": "ch01_done"
+        }
+      ],
+
+      "EndingRules": [
+        {
+          "Outcome": "NextChapter",
+          "EndingKey": "ch01_done",
+          "DisplayName": "믿은 채로",
+          "NextChapterId": "ch02_trusted",
+          "Conditions": [
+            { "Kind": "Stat", "Key": "trust", "Op": "GreaterOrEqual", "IntValue": 2 }
+          ]
+        },
+        {
+          "Outcome": "NextChapter",
+          "EndingKey": "ch01_done",
+          "DisplayName": "그러지 못한 채로",
+          "NextChapterId": "ch02_plain"
+        }
+      ]
+    },
+
+    {
+      "ChapterId": "ch02_trusted",
+      "DisplayName": "2장 — 함께",
+      "StartEpisodeId": "ep_a",
+
+      "Nodes": [
+        {
+          "EpisodeId": "ep_a",
+          "Title": "동행",
+          "Kind": "Main",
+          "DialogueEntryId": "ch02t_01",
+          "NextOptions": [
+            { "TargetEpisodeId": "ep_b", "ChoiceLabel": "" }
+          ]
+        },
+        {
+          "EpisodeId": "ep_b",
+          "Title": "새벽",
+          "Kind": "Main",
+          "DialogueEntryId": "ch02t_02",
+          "IsChapterEndingCandidate": true,
+          "EndingKey": "good_end"
+        }
+      ],
+
+      "EndingRules": [
+        { "Outcome": "ScenarioEnd", "EndingKey": "good_end", "DisplayName": "함께 맞는 아침" }
+      ]
+    },
+
+    {
+      "ChapterId": "ch02_plain",
+      "DisplayName": "2장 — 혼자",
+      "StartEpisodeId": "ep_c",
+
+      "Nodes": [
+        {
+          "EpisodeId": "ep_c",
+          "Title": "혼자",
+          "Kind": "Main",
+          "DialogueEntryId": "ch02p_01",
+          "IsChapterEndingCandidate": true,
+          "EndingKey": "plain_end"
+        }
+      ],
+
+      "EndingRules": [
+        { "Outcome": "ScenarioEnd", "EndingKey": "plain_end", "DisplayName": "혼자 맞는 아침" }
+      ]
+    }
+  ]
+}

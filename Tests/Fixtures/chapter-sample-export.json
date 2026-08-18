@@ -1,0 +1,154 @@
+{
+  "ChapterId": "chapter-graph-sample",
+  "DisplayName": "chapter-graph-sample",
+  "StartEpisodeId": "main05.01",
+  "Stats": [
+    {
+      "Key": "trust",
+      "DisplayName": "신뢰",
+      "Type": "Number",
+      "Initial": 0,
+      "Minimum": 0,
+      "Maximum": 10
+    },
+    {
+      "Key": "anger",
+      "DisplayName": "분노",
+      "Type": "Number",
+      "Initial": 0,
+      "Minimum": 0,
+      "Maximum": 10
+    },
+    {
+      "Key": "fatigue",
+      "DisplayName": "피로",
+      "Type": "Number",
+      "Initial": 0,
+      "Minimum": 0,
+      "Maximum": 10
+    }
+  ],
+  "Nodes": [
+    {
+      "EpisodeId": "main05.01",
+      "Title": "닫힌 문 앞에서",
+      "IndexText": "",
+      "Kind": "Main",
+      "DialogueEntryId": "Story_ch05_01",
+      "VisibleConditions": [],
+      "UnlockConditions": [],
+      "NextOptions": [
+        {
+          "TargetEpisodeId": "main05.02",
+          "ChoiceLabel": "",
+          "VisibleConditions": [],
+          "Conditions": [],
+          "HideWhenLocked": false,
+          "LockedReasonText": "",
+          "StatChanges": []
+        }
+      ],
+      "Attachments": [],
+      "IsChapterEndingCandidate": false,
+      "EndingKey": "",
+      "DesignerNote": "챕터 진입점",
+      "Position": {
+        "X": 0,
+        "Y": 0
+      }
+    },
+    {
+      "EpisodeId": "main05.02",
+      "Title": "조용한 복도",
+      "IndexText": "",
+      "Kind": "Main",
+      "DialogueEntryId": "Story_ch05_02",
+      "VisibleConditions": [],
+      "UnlockConditions": [],
+      "NextOptions": [
+        {
+          "TargetEpisodeId": "main05.03",
+          "ChoiceLabel": "혼자 문을 연다",
+          "VisibleConditions": [],
+          "Conditions": [],
+          "HideWhenLocked": false,
+          "LockedReasonText": "",
+          "StatChanges": []
+        }
+      ],
+      "Attachments": [],
+      "IsChapterEndingCandidate": false,
+      "EndingKey": "",
+      "DesignerNote": "",
+      "Position": {
+        "X": 220,
+        "Y": 0
+      }
+    },
+    {
+      "EpisodeId": "main05.03",
+      "Title": "문 너머",
+      "IndexText": "",
+      "Kind": "Main",
+      "DialogueEntryId": "Story_ch05_03",
+      "VisibleConditions": [],
+      "UnlockConditions": [],
+      "NextOptions": [
+        {
+          "TargetEpisodeId": "main05.end",
+          "ChoiceLabel": "",
+          "VisibleConditions": [],
+          "Conditions": [],
+          "HideWhenLocked": false,
+          "LockedReasonText": "",
+          "StatChanges": []
+        }
+      ],
+      "Attachments": [],
+      "IsChapterEndingCandidate": false,
+      "EndingKey": "",
+      "DesignerNote": "",
+      "Position": {
+        "X": 440,
+        "Y": 120
+      }
+    },
+    {
+      "EpisodeId": "attach05.02s",
+      "Title": "샘플 섬 회상",
+      "IndexText": "",
+      "Kind": "Attachment",
+      "DialogueEntryId": "Story_ch05_02_side",
+      "VisibleConditions": [],
+      "UnlockConditions": [],
+      "NextOptions": [],
+      "Attachments": [],
+      "IsChapterEndingCandidate": false,
+      "EndingKey": "",
+      "DesignerNote": "부착(사이드)",
+      "Position": {
+        "X": 220,
+        "Y": 170
+      }
+    },
+    {
+      "EpisodeId": "main05.end",
+      "Title": "선택의 밤",
+      "IndexText": "",
+      "Kind": "Main",
+      "DialogueEntryId": "Story_ch05_end",
+      "VisibleConditions": [],
+      "UnlockConditions": [],
+      "NextOptions": [],
+      "Attachments": [],
+      "IsChapterEndingCandidate": true,
+      "EndingKey": "ch05_normal",
+      "DesignerNote": "엔딩 후보",
+      "Position": {
+        "X": 680,
+        "Y": 0
+      }
+    }
+  ],
+  "EndingRules": []
+}

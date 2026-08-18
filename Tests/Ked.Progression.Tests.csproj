@@ -31,4 +31,16 @@
     <ProjectReference Include="..\Runtime\Ked.Progression.csproj" />
   </ItemGroup>
 
+  <!--
+    저작 도구가 실제로 내보낸 챕터 JSON. DTO의 필드 이름이 그 출력과 맞는지를
+    손으로 만든 객체가 아니라 **진짜 파일**로 확인한다 — 이름이 하나만 어긋나도
+    그 값이 조용히 기본값으로 들어오기 때문이다.
+
+    ⚠ 유니티는 Tests/ 를 EditMode asmdef로 컴파일하며 이 항목을 보지 않는다.
+    거기서는 픽스처를 못 읽으므로 해당 테스트만 dotnet 전용이다.
+  -->
+  <ItemGroup>
+    <None Include="Fixtures\**\*.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>
