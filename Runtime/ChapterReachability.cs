@@ -3,15 +3,8 @@ using System.Collections.Generic;
 
 namespace Ked.Progression
 {
-    /// <summary>
-    /// 그 에피소드에 <b>도착했을 때</b> 스탯 하나가 가질 수 있는 폭.
-    ///
-    /// 값은 <b>도착 직후</b>다 — 그 노드로 들어오는 간선의 증감까지 커밋한 뒤. 루트가 하나면
-    /// 최소·최대가 같고, 갈래가 여럿이면 벌어진다. 증명이 이미 (에피소드, 스탯 벡터)로 걷고
-    /// 있으므로 걷는 김에 적는 것이지 따로 계산하지 않는다.
-    ///
-    /// ⚠ <b>D1의 챕터 연쇄가 이 값을 쓴다</b> — ch01의 출구 스팬이 ch02의 진입 가정이 된다.
-    /// </summary>
+    // 특정 에피소드 도달 시,
+    // 가능한 스탯 폭 계산.
     public sealed class StatSpan
     {
         public string Key { get; }
@@ -19,7 +12,7 @@ namespace Ked.Progression
         public int Minimum { get; }
         public int Maximum { get; }
 
-        /// <summary>어느 루트로 와도 같은 값인가.</summary>
+        // 모든 루트에서 동일한 지.
         public bool IsFixed => Minimum == Maximum;
 
         public StatSpan(string key, string displayName, int minimum, int maximum)
@@ -34,23 +27,18 @@ namespace Ked.Progression
             IsFixed ? $"{Key}={Minimum}" : $"{Key}={Minimum}~{Maximum}";
     }
 
-    /// <summary>
-    /// 왜 못 가는가. <b>문장이 아니라 값으로 낸다</b> — 이 패키지는 저작자에게 보일 문구를
-    /// 짓지 않는다(<see cref="ResolvedOption.LockedReason"/>과 같은 판단). 저작 도구가
-    /// 이미 사람이 읽을 문장을 만들고 있고, 여기서 또 만들면 규약 사본이 된다.
-    /// </summary>
     public enum UnreachableCause
     {
-        /// <summary>들어오는 간선이 아예 없다.</summary>
+        // 들어오는 간선이 아예 없음.
         NoIncomingEdge = 0,
 
-        /// <summary>들어오는 간선의 출발점부터 도달 불가다.</summary>
+        // 들어오는 간선의 출발점부터 도달 불가.
         SourcesUnreachable = 1,
 
-        /// <summary>관문 조건이 어떤 경로로도 만족되지 않는다.</summary>
+        // 관문 조건이 어떤 경로로도 만족되지 않음.
         BlockedByCondition = 2,
 
-        /// <summary>위 어디에도 안 맞는다 — 탐색이 상한에서 끊겼을 때 주로 나온다.</summary>
+        // 기타 - 탐색이 상한에서 끊겼을 때 주로 나올 것으로 예상 됨.
         Undetermined = 3,
     }
 
@@ -59,10 +47,7 @@ namespace Ked.Progression
         public string EpisodeId { get; }
         public UnreachableCause Cause { get; }
 
-        /// <summary>
-        /// <see cref="UnreachableCause.BlockedByCondition"/>일 때 그 조건.
-        /// 아니면 만들어지지 않은 값이다(<c>IsConstructed == false</c>).
-        /// </summary>
+        // UnreachableCause.BlockedByCondition
         public ProgressionCondition BlockingCondition { get; }
 
         public UnreachableEpisode(
@@ -84,15 +69,12 @@ namespace Ked.Progression
         private readonly Dictionary<string, IReadOnlyList<StatSpan>> _spans;
         private readonly HashSet<string> _reachable;
 
-        /// <summary>시작 에피소드에서 어떤 플레이로든 닿을 수 있는 에피소드.</summary>
+        // 어떤 플레이로든 닿을 수 있는 에피소드.
         public IReadOnlyCollection<string> ReachableEpisodeIds => _reachable;
 
         public IReadOnlyList<UnreachableEpisode> Unreachable { get; }
 
-        /// <summary>
-        /// 상태공간을 끝까지 훑었는가. 상한에 걸려 중단했으면 <c>false</c>이고,
-        /// 그때 "도달 불가"는 <b>단정이 아니다</b> — 증명하지 못한 것을 증명했다고 말하지 않는다.
-        /// </summary>
+        // 상태공간을 끝까지 훑었는지 체크. 상한에 걸려 중단 시, false.
         public bool ExplorationComplete { get; }
 
         public ReachabilityResult(
@@ -107,7 +89,7 @@ namespace Ked.Progression
             _spans = spans;
         }
 
-        /// <summary>그 에피소드 도착 시점의 스탯 폭. 못 가는 에피소드는 비어 있다.</summary>
+        // 특정 에피소드 도착 시 가능한 스탯 폭.
         public IReadOnlyList<StatSpan> SpansFor(string episodeId) =>
             episodeId != null && _spans.TryGetValue(episodeId, out IReadOnlyList<StatSpan> spans)
                 ? spans
@@ -117,34 +99,17 @@ namespace Ked.Progression
             episodeId != null && _reachable.Contains(episodeId);
     }
 
-    /// <summary>
-    /// 정적 도달성 증명 — <b>"작가가 무엇을 저장하든 특정 에피소드로 절대 못 가는 상태를
-    /// 만들 수 없다"</b>의 장치.
-    ///
-    /// 상태 = (에피소드, 스탯 정수 벡터). 스탯이 2~5개·정수·유한 범위라 상태공간이 유한하고
-    /// <b>완전 탐색이 된다</b> — 경계값 버그를 막으려던 정수 고정이 이 증명을 가능하게 만들었다.
-    /// float이면 여기서 결정 불가능이다.
-    ///
-    /// 스탯 증감의 원천은 <b>간선 하나</b>다. 에피소드 안에서는 스탯이 변하지 않으므로
-    /// 근사 없는 정확 전이다.
-    ///
-    /// <c>cleared:</c> 조건은 도달 가능 집합 자체를 참조하므로 <b>고정점 반복</b>으로 푼다 —
-    /// 집합은 단조 증가라 반드시 수렴한다.
-    ///
-    /// <b>이관 원본</b>: 저작 도구의 <c>ChapterReachabilityProver</c>.
-    /// <b>이 타입의 판정 기준은 "이관 전후로 증명 결과가 같다"이고</b>, 그래서 알고리즘을
-    /// 개선하지 않고 그대로 옮겼다 — 더 나은 방법이 보여도 등가성이 먼저다.
-    /// 사람이 읽을 진단 문구만 안 가져왔다(저작 도구가 이미 만든다).
-    /// </summary>
+    // "작가가 무엇을 저장하든 특정 에피소드로 절대 못 가는 상태를 만들 수 없도록 스탯의 계층을 분리.
+    //
+    // 상태 = (에피소드, 스탯 정수 벡터). 스탯이 2~5개·정수·유한 범위라 상태 공간이 정적이고 유한함.
+    // 완전 탐색이 되도록 설계.
+    //
+    // 스탯 증감의 원천은 간선 하나.
     public static class ChapterReachability
     {
-        /// <summary>완전 탐색 상한. 스탯 5개 × 범위 0~10이라도 이 안에 넉넉히 든다.</summary>
+        // 완전 탐색 상한. 스탯 5개 × 범위 0~10정도로 가정.
         public const int StateLimit = 250_000;
 
-        /// <param name="clearedChapterIds">
-        /// 이 챕터에 들어올 때 이미 클리어된 챕터들 — <c>ChapterCleared</c> 조건이 본다.
-        /// 저작 도구에는 없던 인자다(챕터 단위로만 증명했다). 비우면 아무것도 안 깬다.
-        /// </param>
         public static ReachabilityResult Prove(
             ChapterProgression chapter, IEnumerable<string> clearedChapterIds = null)
         {

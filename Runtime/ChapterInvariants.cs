@@ -3,20 +3,8 @@ using System.Collections.Generic;
 
 namespace Ked.Progression
 {
-    /// <summary>
-    /// 챕터 전체가 지켜야 하는 것들. <b>여기가 그 규칙의 유일한 구현이다.</b>
-    ///
-    /// 두 소비자가 같은 규칙을 <b>다른 방식으로</b> 쓴다:
-    /// <list type="bullet">
-    /// <item><see cref="ChapterProgression"/>의 생성자 — 첫 진단에서 <b>던진다.</b>
-    /// 로더를 거치지 않은 프로그래머 실수에 대한 마지막 방어선이므로 즉시 멈추는 것이 맞다</item>
-    /// <item><see cref="ProgressionLoader"/> — 전부 <b>모아서</b> 낸다.
-    /// 데이터의 잘못이므로 첫 오류에서 멈추면 저작자가 왕복을 여러 번 한다</item>
-    /// </list>
-    ///
-    /// <b>규칙을 두 곳에 쓰지 않기 위해 이렇게 나눴다.</b> 사본이 생기면 한쪽만 고쳐지는 날이
-    /// 오고, 그날 생성자가 통과시킨 것을 로더가 막거나 그 반대가 된다.
-    /// </summary>
+    // 전 챕터 공통 규칙.
+    // ChapterProgression, ProgressionLoader가 사용.
     internal static class ChapterInvariants
     {
         public static void Collect(
@@ -36,11 +24,7 @@ namespace Ked.Progression
             VerifyEndingRules(endingRules, nodes, statsByKey, into);
         }
 
-        /// <summary>
-        /// D2 — <b>어느 엔딩인지는 노드의 <c>EndingKey</c>가 정하고, 규칙은 그 키로
-        /// 조회된다.</b> 그래서 둘이 서로를 덮어야 한다: 키를 내는 노드에 규칙이 없으면
-        /// "엔딩에 도달했는데 갈 곳이 없고", 아무도 안 내는 키의 규칙은 영원히 안 탄다.
-        /// </summary>
+        // 어느 엔딩인지는 노드의 EndingKey가 정하고, 규칙은 그 키로 조회.
         private static void VerifyEndingRules(
             IReadOnlyList<EndingRule> rules,
             IReadOnlyList<EpisodeNode> nodes,
@@ -65,9 +49,7 @@ namespace Ked.Progression
                 EndingRule rule = rules[i];
 
                 if (rule == null)
-                {
                     continue;
-                }
 
                 string at = $"EndingRules[{i}]";
 
@@ -127,10 +109,8 @@ namespace Ked.Progression
             foreach (KeyValuePair<string, int> pair in lastIndexByKey)
             {
                 if (producedKeys.Contains(pair.Key))
-                {
                     continue;
-                }
-
+                
                 into.Add(ProgressionDiagnostic.Error(
                     $"EndingRules[{pair.Value}]",
                     $"엔딩키 '{pair.Key}'를 내는 노드가 없다. 이 규칙은 영원히 타지 않는다."));
@@ -262,7 +242,7 @@ namespace Ked.Progression
                 ProgressionCondition condition = conditions[i];
                 string at = $"{where}[{i}]";
 
-                // Cleared 계열은 값 비교가 아니다 — 클리어했는가만 묻는다(§G1).
+                // Cleared 계열은 값 비교가 아니다 — 클리어했는가만 묻는다
                 // 연산을 여기서 확인하지 않는 이유: 팩토리가 Exists 말고는 만들 수 없게 한다.
                 //
                 // 대상의 실재도 여기서 보지 않는다. 에피소드 오타는 "영원히 안 열리는 관문"이
@@ -296,7 +276,7 @@ namespace Ked.Progression
                     continue;
                 }
 
-                // §G4 — bool 스탯의 값 공간은 0·1 하나뿐이라 크기 비교가 의미를 갖지 않는다.
+                // bool 스탯의 값 공간은 0·1 하나뿐이라 크기 비교가 의미를 갖지 않는다.
                 // 저작 쪽도 같은 자리에서 막는다(ChapterWorkbookReader.VerifyBoolStatUsage).
                 if (condition.Op != ComparisonOp.Equal)
                 {
@@ -337,7 +317,7 @@ namespace Ked.Progression
                     continue;
                 }
 
-                // §G4 — bool 스탯에 증감은 의미가 없다(0/1 사이를 +1로 오가면 clamp에 걸려
+                // bool 스탯에 증감은 의미가 없다(0/1 사이를 +1로 오가면 clamp에 걸려
                 // 한 방향으로만 간다). 저작 쪽이 이미 오류로 막고 있다.
                 if (stat.Type == StatType.Bool)
                 {

@@ -85,10 +85,10 @@
 
 | | 작업 | 근거 | 깨지나 |
 |---|---|---|---|
-| **W0a** | `ProgressionCondition` 생성자 → 팩토리 셋 · `ChapterCleared` 추가 | P1 · D3 | 테스트 (기계적) |
-| **W0b** | `EpisodeOption` 생성자 → `Choice` / `Auto` | P1 — **문구 지움 사고** | 테스트 (기계적) |
-| **W0c** | `EpisodeNode.IsChapterEndingCandidate` 제거 | sentinel 쌍 | 예 |
-| **W0d** | `WithStatChanges` + `WithMovedTo` → `Commit` 하나 | P1 — **트랜잭션 경계의 타입 표현** | 예 |
+| **W0a** ✅ | `ProgressionCondition` 생성자 → 팩토리 셋 · `ChapterCleared` 추가 | P1 · D3 | 테스트 (기계적) |
+| **W0b** ✅ | `EpisodeOption` 생성자 → `Choice` / `Auto` | P1 — **문구 지움 사고** | 테스트 (기계적) |
+| **W0c** ✅ | `EpisodeNode.IsChapterEndingCandidate` 제거 | sentinel 쌍 | 예 |
+| **W0d** ✅ | `WithStatChanges` + `WithMovedTo` → `Commit` 하나 | P1 — **트랜잭션 경계의 타입 표현** | 예 |
 
 > **W0d가 트랙 0의 핵심이다.** 두 메서드가 각각 public이면 따로 부를 수 있고, 따로 부를
 > 수 있으면 언젠가 따로 불린다. 그 순간 "스탯만 바뀌고 안 옮겨 간" 상태가 생기는데 그게
@@ -243,7 +243,7 @@ W8이 이 패키지의 **오라클**이다. `Ked.Presentation.Core` 추출 때 �
 | **이 문서** | 순서 · 게이트 · 결정 대기 |
 | [`handoff.md`](handoff.md) | 현재 상태 · 함정 |
 | [`model-draft.md`](model-draft.md) | v0 기록. architecture.md가 대체한다 |
-| [`../CHANGELOG.md`](../CHANGELOG.md) | 결정 기록 — ⚠ `EndingRules` 항목 정정 필요 (§1) |
+| [`../CHANGELOG.md`](../CHANGELOG.md) | 결정 기록 (왜 그렇게 했나). `EndingRules` 항목은 정정 완료 (§1) |
 
 **갈리면**: 코드 > 계약서 > architecture.md > 이 문서.
 

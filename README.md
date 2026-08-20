@@ -125,5 +125,6 @@ dotnet test Tests/Ked.Progression.Tests.csproj
 | | |
 |---|---|
 | `.meta` 파일 | 아직 없다. **유니티에서 한 번 임포트해 생성한 뒤 커밋해야 한다** — UPM git 패키지는 커밋된 `.meta`의 GUID가 참조 안정성이다 |
-| 모델 본체 | `docs/model-draft.md` 검토 후 착수 |
-| 스탯 정의의 출처 | `progression.json` vs `game.definition.json` — **소유자 결정 대기** (`docs/model-draft.md` §5-③) |
+| bool 스탯을 무엇이 켜나 | §G4가 bool 증감을 금지해 **간선으로는 값이 안 바뀐다.** 초기값이 전부이고, 켜는 경로가 계약서에도 여기에도 없다 (`docs/handoff.md` §6-4) |
+| 저작 `간선` 시트의 `종류` 열 | 없으면 "문구를 실수로 지운 것"과 의도한 자동 진행을 데이터로 구별할 수 없다. 지금은 로더가 경고로 때운다 (D5) |
+| 챕터 연쇄 증명 | 증명은 챕터 하나 단위로 닫혔다. 잇는 방법은 정해졌고(`docs/work-plan.md` §9 안 (나)), **콘텐츠가 실제로 이어진 뒤에 한다** |

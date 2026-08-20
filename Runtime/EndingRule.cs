@@ -3,37 +3,19 @@ using System.Collections.Generic;
 
 namespace Ked.Progression
 {
-    /// <summary>
-    /// 챕터가 끝난 뒤 어디로 가는가.
-    ///
-    /// <b>빈 <c>NextChapterId</c>를 "시나리오 종료"의 뜻으로 쓰지 않는다.</b> 그건
-    /// <c>ChoiceLabel</c>이 비면 자동 진행이던 것과 같은 sentinel이고, 같은 사고를 만든다 —
-    /// 저작에서 다음 챕터 칸을 실수로 비우면 <b>거기서 게임이 끝나 버리는데 아무도 모른다.</b>
-    /// 구 런타임의 <c>bool UnlockNextChapter</c> + <c>NextChapterId</c>도 같은 이유로
-    /// 안 가져왔다(4조합 중 둘이 무효였다).
-    /// </summary>
+    // 챕터가 끝난 뒤 동작.
+    // 빈 NextChapterId를 "시나리오 종료"의 뜻으로 쓰지 않음.
     public enum EndingOutcome
     {
-        /// <summary>다음 챕터로 이어진다.</summary>
+        // 다음 챕터로.
         NextChapter = 0,
 
-        /// <summary>여기서 시나리오가 끝난다. 의도한 종착점이다.</summary>
+        // 시나리오 끝. 종착점.
         ScenarioEnd = 1,
     }
 
-    /// <summary>
-    /// 챕터에서 나가는 길 하나 — <b>시나리오 층의 간선이다.</b>
-    /// 에피소드 층의 <see cref="EpisodeOption"/>과 같은 자리에 같은 방식으로 놓인다:
-    /// 출발 노드(챕터)가 자기 나가는 길을 소유한다.
-    ///
-    /// 원본은 런타임 <c>ChapterEndingRule</c>(test13)이다. <b>모양만 가져오고 코드는 안
-    /// 가져왔다</b> — 그쪽 평가기는 조건을 조용히 틀리게 읽는다.
-    ///
-    /// <b>D2 — 어느 엔딩인지는 이 타입이 정하지 않는다.</b>
-    /// <see cref="EpisodeNode.EndingKey"/>가 정하고, 이 규칙은 그 키로 <b>조회된다.</b>
-    /// <see cref="Conditions"/>는 판정이 아니라 <b>같은 엔딩키에서 다음 챕터가 갈릴 때</b>
-    /// 갈래를 고르는 용도다. 엔딩을 두 곳에서 정하면 반드시 어긋난다.
-    /// </summary>
+    // 시나리오 층의 간선에 대응.
+    // 어느 엔딩인지는 이 타입이 정하지 않음.
     public sealed class EndingRule
     {
         public EndingOutcome Outcome { get; }
@@ -50,12 +32,12 @@ namespace Ked.Progression
         /// </summary>
         public IReadOnlyList<ProgressionCondition> Conditions { get; }
 
-        /// <summary><see cref="EndingOutcome.ScenarioEnd"/>면 빈 문자열이다.</summary>
+        // "EndingOutcome.ScenarioEnd"면 빈 문자열이다.
         public string NextChapterId { get; }
 
         public string DesignerNote { get; }
 
-        /// <summary>조건이 없어 무조건 성립하는 규칙 — 같은 키의 마지막 자리다.</summary>
+        // 조건이 없어 무조건 성립하는 규칙 — 같은 키의 마지막 자리.
         public bool IsCatchAll => Conditions.Count == 0;
 
         private EndingRule(
@@ -83,7 +65,7 @@ namespace Ked.Progression
             ProgressionCondition.RequireAllConstructed(Conditions, nameof(conditions));
         }
 
-        /// <summary>이 엔딩에서 다음 챕터로 이어진다.</summary>
+        // 이 엔딩에서 다음 챕터로 이어짐.
         public static EndingRule To(
             string endingKey,
             string nextChapterId,
@@ -104,10 +86,7 @@ namespace Ked.Progression
                 conditions, displayName, designerNote);
         }
 
-        /// <summary>
-        /// 이 엔딩에서 시나리오가 끝난다. <b>다음 챕터 인자를 받지 않는다</b> —
-        /// "끝난다"와 "다음을 안 적었다"가 같은 모양이 되지 않게 한다.
-        /// </summary>
+        // 이 엔딩에서 시나리오 종료.
         public static EndingRule Ends(
             string endingKey,
             IReadOnlyList<ProgressionCondition> conditions = null,

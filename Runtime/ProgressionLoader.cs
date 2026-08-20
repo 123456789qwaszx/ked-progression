@@ -5,17 +5,19 @@ using Ked.Progression.Dto;
 namespace Ked.Progression
 {
     /// <summary>
-    /// DTO → 모델. <b>침묵 금지가 실제로 사는 자리다.</b>
+    /// DTO -> 모델.
     ///
-    /// <b>진단을 전부 모아서 한 번에 돌려준다.</b> 첫 오류에서 멈추면 저작자가 고치고 다시
-    /// 내보내고 또 걸리는 왕복을 여러 번 한다. 오류가 하나라도 있으면 로드 실패로 보고
-    /// <see cref="ProgressionLoadResult.Chapter"/>를 <c>null</c>로 낸다 — 부분 통과를
-    /// 만들지 않는다.
+    /// 오류가 하나라도 있으면 로드 실패로 보고
+    /// <see cref="ProgressionLoadResult.Chapter"/>를 <c>null</c>로 냄.
+    /// (부분 통과 금지)
     ///
-    /// <b>여기서 새로 쓰는 규칙은 데이터의 모양에 관한 것뿐이다</b> — 알 수 없는 enum 이름,
-    /// 언제나 비어 있어야 할 칸이 안 비었을 때, sentinel 쌍의 불일치. 챕터 전체의 불변식은
-    /// <see cref="ChapterInvariants"/> 한 곳에 있고 여기서는 그것을 <b>모으는 방식으로</b>
-    /// 쓴다(생성자는 던지는 방식으로 쓴다).
+    /// 여기서 새로 쓰는 규칙은 데이터의 모양에 관한 것뿐이다
+    /// 알 수 없는 enum 이름,
+    /// 언제나 비어 있어야 할 칸이 안 비었을 때,
+    /// sentinel 쌍의 불일치.
+    /// 
+    /// 챕터 전체의 불변식은 <see cref="ChapterInvariants"/> 한 곳에 있고
+    /// 여기서는 그것을 모으는 방식으로 쓴다.
     /// </summary>
     public static class ProgressionLoader
     {
@@ -50,9 +52,7 @@ namespace Ked.Progression
 
             if (autoPaths.Count > 0)
             {
-                // D5 — 저작 데이터에 종류 열이 없어 문구가 빈 간선을 자동 진행으로 읽는다.
-                // 간선마다 경고를 내면 흔한 경우라 소음이 되고, 소음은 읽히지 않는다.
-                // 한 줄로 모아 "몇 개가 그렇게 읽혔는지"만 보여 준다.
+                // 저작 데이터에 종류 열이 없어 문구가 빈 간선을 자동 진행으로 읽음.
                 diagnostics.Add(ProgressionDiagnostic.Warning(
                     "NextOptions",
                     $"문구가 빈 간선 {autoPaths.Count}개를 자동 진행으로 읽었다: " +
@@ -66,7 +66,7 @@ namespace Ked.Progression
                 return new ProgressionLoadResult(null, diagnostics);
             }
 
-            // 챕터 전체의 불변식은 ChapterInvariants가 소유한다. 여기서는 모아서 낸다.
+            // 챕터 전체의 불변식은 ChapterInvariants가 소유. 여기서는 수집만.
             ChapterInvariants.Collect(
                 stats, nodes, endingRules, dto.StartEpisodeId, diagnostics, out _, out _);
 
@@ -121,7 +121,7 @@ namespace Ked.Progression
                     ? $"Chapters[{chapterDto.ChapterId}]"
                     : $"Chapters[{i}]";
 
-                // D1 — 챕터가 스탯을 안 적었으면 시나리오 것을 쓴다. 조용한 기본값이 아니라
+                // 챕터가 스탯을 안 적었으면 시나리오 것을 쓴다. 조용한 기본값이 아니라
                 // 소유 규칙을 그대로 적용하는 것이다.
                 ProgressionLoadResult result = Load(chapterDto, dto.Stats);
 
@@ -339,8 +339,7 @@ namespace Ked.Progression
         private static void VerifyNodeIsLeanedOut(
             EpisodeNodeDto dto, string where, List<ProgressionDiagnostic> into)
         {
-            // v8 — 관문이 노드에서 간선으로 내려갔다. 노드 쪽에 값이 있다면 구판 내보내기가
-            // 만든 데이터이고, 그대로 실으면 **에러 없이 관문이 전부 열린다.**
+            // 분기 관문이 노드에서 간선으로 내려감. 마이그레이션 검사용.
             if (Count(dto.VisibleConditions) > 0 || Count(dto.UnlockConditions) > 0)
             {
                 into.Add(ProgressionDiagnostic.Error(
@@ -358,7 +357,7 @@ namespace Ked.Progression
                     "조용히 버리지 않는다."));
             }
 
-            // sentinel 쌍 — 4조합 중 둘이 무효다. 어느 쪽이 이기는지 추측하지 않는다.
+            // sentinel 쌍 — 4조합 중 둘이 무효다.
             bool hasKey = !string.IsNullOrEmpty(dto.EndingKey);
 
             if (dto.IsChapterEndingCandidate != hasKey)
