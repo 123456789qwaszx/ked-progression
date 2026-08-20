@@ -85,15 +85,25 @@
 
 ## 4. 있는 것
 
-| | 파일 | 무엇 |
+**폴더가 곧 층이다** (2026-08-19). `Runtime/` 아래 일곱이고, 문서가 쓰는 층 이름을
+그대로 쓴다 — 새 어휘를 만들지 않는다.
+
+| 폴더 | 파일 | 무엇 |
 |---|---|---|
-| 어휘 | `ComparisonOp` · `ProgressionCondition` · `StatDefinition` | 세 층이 함께 쓴다. 조건은 **팩토리만** 연다 |
-| 스펙 | `ScenarioProgression` · `ChapterProgression` · `EpisodeNode` · `EpisodeOption` · `EndingRule` | 콘텐츠의 모양 |
-| 불변식 | `ScenarioInvariants` · `ChapterInvariants` | **규칙의 유일한 구현.** 생성자는 던지고 로더는 모은다 |
-| 진행 | `ProgressionState` (+ `ChapterEnding`) | 세이브가 담을 내용 |
-| 해석 | `ChapterTransition` · `ScenarioTransition` | 지금 무엇을 할 수 있는가. **저장하지 않는다** |
-| 입구 | `Dto/` · `ProgressionLoader` · `ProgressionDiagnostic` | 침묵 금지가 사는 자리 |
-| 평가 | `ConditionEvaluator` | 방어 코드가 없다 — 경계에서 이미 좁혔다 |
+| `Vocabulary/` | `ComparisonOp` · `ProgressionCondition` · `StatDefinition` · `ProgressionDiagnostic` | 세 층이 함께 쓴다. 조건은 **팩토리만** 연다 |
+| `Spec/` | `ScenarioProgression` · `ChapterProgression` · `EpisodeNode` · `EpisodeOption` · `EndingRule` · `ScenarioInvariants` · `ChapterInvariants` | 콘텐츠의 모양. **불변식이 여기 사는 이유는 §3** — 규칙은 타입과 함께 살고 로더는 앞당길 뿐이다 |
+| `State/` | `ProgressionState` (+ `ChapterEnding`) | 세이브가 담을 내용 |
+| `Transition/` | `ConditionEvaluator` · `ChapterTransition` · `ScenarioTransition` | 지금 무엇을 할 수 있는가. **저장하지 않는다.** 평가기에 방어 코드가 없다 |
+| `Loading/` | `ProgressionLoader` · `LoadResults` · `Dto/` | 침묵 금지가 사는 자리 |
+| `Save/` | `ProgressionSave` | 유저 데이터 — 굽고 되살린다 |
+| `Reachability/` | `ChapterReachability` | 증명. **진행 층과 독립이고 플레이 중엔 안 돈다** |
+
+> `ProgressionDiagnostic`이 `Loading/`이 아니라 `Vocabulary/`에 있다 — 로더뿐 아니라
+> **불변식(Spec)과 세이브 복원(Save)도 낸다.** 로더 전용인 `ScenarioLoadResult` ·
+> `ProgressionLoadResult`만 `Loading/LoadResults.cs`로 갈라 두었다.
+>
+> **네임스페이스는 `Ked.Progression` 하나 그대로다**(`Dto`만 예외). 폴더는 읽는 사람을
+> 위한 것이고, 호스트는 `using` 한 줄이면 된다.
 
 **픽스처 둘** — `Tests/Fixtures/chapter-sample-export.json`(툴이 실제로 낸 것) ·
 `scenario-two-chapters.json`(손으로 쓴 것, 툴에 시나리오 저작이 없다).
