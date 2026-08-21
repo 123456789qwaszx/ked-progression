@@ -2,33 +2,19 @@ using System.Collections.Generic;
 
 namespace Ked.Progression.Dto
 {
-    /// <summary>
-    /// 저작 쪽 `ChapterProgressionExporter`가 내는 JSON과 <b>필드 1:1</b>이다.
-    ///
-    /// <b>이 패키지는 JSON을 파싱하지 않는다(규율 2).</b> 역직렬화는 호스트가 하고, 여기는
-    /// 받을 그릇만 갖는다. 그래서 직렬화 어트리뷰트도 <c>[Serializable]</c>도 없다 —
-    /// 어느 직렬화기를 쓸지는 호스트의 사정이다.
-    ///
-    /// <b>모델에 없는 칸도 그대로 남긴다.</b> <c>IndexText</c>(v5 폐지) · <c>Position</c>(저작
-    /// 레이아웃) · 노드의 <c>VisibleConditions</c>/<c>UnlockConditions</c>(v8에서 간선으로
-    /// 내려감) · <c>Attachments</c>(v1 비범위). 스키마가 1:1이어야 <b>"왔는데 안 쓴다"를
-    /// 로더가 볼 수 있다</b> — 필드를 빼 버리면 그 데이터가 조용히 사라진다.
-    /// </summary>
+    // 저작 쪽 `ChapterProgressionExporter`가 내는 JSON과 필드 1:1.
     public sealed class ChapterProgressionDto
     {
         public string ChapterId { get; set; }
         public string DisplayName { get; set; }
         public string StartEpisodeId { get; set; }
 
-        /// <summary>2026-08-18 신설 — 이 칸이 비어 있어서 실데이터를 아예 못 싣고 있었다.</summary>
         public List<StatDto> Stats { get; set; }
 
         public List<EpisodeNodeDto> Nodes { get; set; }
 
-        /// <summary>
-        /// 시나리오 층의 간선. <b>툴은 아직 안 낸다</b>(언제나 빈 배열) — 그래서 이 모양은
-        /// 손으로 쓰는 시나리오 JSON이 먼저 쓰고, 툴이 나중에 맞춘다(X2).
-        /// </summary>
+        // 시나리오 층의 간선. <b>툴은 아직 안 낸다</b>(언제나 빈 배열) — 그래서 이 모양은
+        // 손으로 쓰는 시나리오 JSON이 먼저 쓰고, 툴이 나중에 맞춘다(X2).
         public List<EndingRuleDto> EndingRules { get; set; }
     }
 
