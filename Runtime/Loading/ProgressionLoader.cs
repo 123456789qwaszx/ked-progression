@@ -158,6 +158,66 @@ namespace Ked.Progression
             return new ScenarioLoadResult(scenario, diagnostics);
         }
 
+        /// <summary>
+        /// 챕터 하나를 시나리오로 감싸 싣는다 — <b>챕터만 떼어 테스트 플레이하는 길</b>이다.
+        ///
+        /// 툴은 챕터 JSON만 내는데 <see cref="EpisodeFlow"/>는 시나리오를 요구한다. 그런데
+        /// 이 길은 시나리오 저작이 생긴 뒤에도 사라지지 않는다 — 작가가 ch03만 돌려 보고
+        /// 싶은 때가 영원히 있다. 호스트 둘이 각자 감싸는 코드를 만들지 않게 여기 한 번 둔다.
+        ///
+        /// 감싼 결과: <c>ScenarioId</c> = <c>StartChapterId</c> = 챕터 ID, 챕터 하나,
+        /// <c>Stats</c>는 챕터 것을 시나리오로 승격.
+        ///
+        /// ⚠ 챕터가 든 <c>EndingRules</c>는 그대로 실린다. 그중 다음 챕터로 가는 규칙이
+        /// 있으면 갈 곳이 없으므로 <c>ScenarioInvariants</c>가 허공 간선으로 잡는다 —
+        /// <b>그게 맞는 동작이다.</b> 단일 챕터인데 다음 챕터를 적었다는 뜻이니까.
+        /// </summary>
+        public static ScenarioLoadResult LoadAsSingleChapterScenario(ChapterProgressionDto dto)
+        {
+            var diagnostics = new List<ProgressionDiagnostic>();
+
+            if (dto == null)
+            {
+                diagnostics.Add(ProgressionDiagnostic.Error(
+                    string.Empty, "챕터 DTO가 null이다. 역직렬화가 실패한 것은 아닌지 확인할 것."));
+
+                return new ScenarioLoadResult(null, diagnostics);
+            }
+
+            if (string.IsNullOrEmpty(dto.ChapterId))
+            {
+                // 시나리오 ID와 시작 챕터 ID를 둘 다 여기서 가져온다 — 비면 감쌀 이름이 없다.
+                diagnostics.Add(ProgressionDiagnostic.Error(
+                    "ChapterId",
+                    "챕터 ID가 비어 있다. 단일 챕터 시나리오는 이 ID를 시나리오 ID로도 쓴다."));
+
+                return new ScenarioLoadResult(null, diagnostics);
+            }
+
+            if (Count(dto.Stats) == 0)
+            {
+                // 시나리오가 스탯 정의의 주인인데(D1) 줄 것이 없다. 빈 목록으로 감싸면
+                // 조건이 가리키는 스탯이 전부 "정의되지 않음"이 되어, 진짜 원인인
+                // "이 JSON에는 스탯이 없다"가 진단 수십 개 밑에 묻힌다.
+                diagnostics.Add(ProgressionDiagnostic.Error(
+                    "Stats",
+                    $"챕터 '{dto.ChapterId}'에 스탯 정의가 없어 시나리오로 감쌀 수 없다(D1). " +
+                    "스탯 정의의 주인은 시나리오이고 단일 챕터에서는 챕터 것을 승격한다 — " +
+                    "승격할 것이 없다. 스탯 칸이 서기 전에 내보낸 옛 JSON이라면 다시 내보낼 것."));
+
+                return new ScenarioLoadResult(null, diagnostics);
+            }
+
+            return Load(new ScenarioProgressionDto
+            {
+                ScenarioId = dto.ChapterId,
+                DisplayName = dto.DisplayName,
+                StartChapterId = dto.ChapterId,
+                Stats = dto.Stats,
+                Chapters = new List<ChapterProgressionDto> { dto },
+            });
+        }
+
         // ── 엔딩 규칙 ───────────────────────────────────────────────────────
 
         private static List<EndingRule> LoadEndingRules(

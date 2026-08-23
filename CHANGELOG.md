@@ -6,7 +6,13 @@
 
 ## [Unreleased]
 
-### 추가 — 2026-08-23 (호스트 연결 · C1·C4)
+### 추가 — 2026-08-23 (호스트 연결 · C1·C2·C4)
+- `ProgressionLoader.LoadAsSingleChapterScenario(ChapterProgressionDto)` — **챕터만 떼어
+  테스트 플레이하는 길.** `ScenarioId` = `StartChapterId` = 챕터 ID, `Stats`는 챕터 것을
+  시나리오로 승격. 툴이 챕터 JSON만 내기 때문만이 아니라, 작가가 ch03만 돌려 보고 싶은
+  때가 영원히 있기 때문이다 — 호스트 둘이 각자 감싸지 않게 코어에 한 번 둔다
+- `Tests/SingleChapterScenarioTests.cs` — 호스트 펌프를 그대로 돌려 두 엔딩을 다 걷는다
+  (유니티 H1의 예행). 거부 넷: 스탯 없음 · 빈 스탯 목록 · 챕터 ID 빔 · `null`
 - `StatChangeKind` · `StatChange.Add` / `StatChange.Set` / `StatChange.ApplyTo` —
   **깃발을 켜고 끄는 칸.** 이 칸이 없어 깃발을 쓰는 챕터는 툴이 내보내기를 거부했다
   (저작 쪽 결정 2026-08-19). `StatChangeDto.Op`가 이름 문자열로 실려 온다 —
@@ -18,6 +24,15 @@
 - `ChapterProgression.CreateProofEntryState()` — 옛 이름 `CreateInitialState()`
 
 ### 결정 — 2026-08-23
+- **단일 챕터 감싸기는 시나리오 로더에 위임한다.** `ScenarioProgressionDto`를 만들어
+  `Load(ScenarioProgressionDto)`에 넘긴다 — 불변식·진단 접두·스탯 승격이 전부 이미 거기
+  있으므로 특수 경로를 만들면 그 순간 사본이 둘이 된다. 헬퍼가 직접 하는 것은 **거부 셋**뿐:
+  `null` · 챕터 ID 빔 · 스탯 없음
+- **스탯 없는 챕터는 거부다.** 빈 목록으로 감싸면 조건이 가리키는 스탯이 전부 "정의되지
+  않음"이 되어 진짜 원인("이 JSON에는 스탯이 없다")이 진단 수십 개 밑에 묻힌다
+- **단일 챕터에 `NextChapter` 규칙이 있으면 허공 간선으로 거부**된다(`ScenarioInvariants`).
+  조용히 종착으로 바꾸지 않는다 — 단일 챕터인데 다음 챕터를 적었다는 뜻이다.
+  반대로 `EndingRules`가 **아예 없는 것은 정상**이고 `ScenarioTransition`이 종착으로 읽는다
 - **`StatChange`의 공개 생성자를 닫고 팩토리 둘만 연다**(P1). 종류를 안 적고 만드는 길을
   없앤다. 타입이 bool 여부를 모르므로 `Set`에 2가 오는 것까지는 못 막고, 그 값 검사는
   `ChapterInvariants`가 한다 — 규칙을 위로 올린다(타입 > 생성자 > 로더)
