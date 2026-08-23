@@ -1,3 +1,10 @@
+// dotnet 전용 — 유니티에서는 통째로 빠진다.
+//
+// 픽스처를 System.Text.Json으로 읽는데 유니티에는 그 어셈블리가 없고(컴파일 자체가 안 된다),
+// Tests/Fixtures/*.json도 EditMode로 복사되지 않는다. 규율 2대로 역직렬화는 호스트의 일이라
+// 코어가 파서를 갖지 않기 때문이고, 그래서 이 파일들은 dotnet CI에서만 돈다.
+#if !UNITY_2017_1_OR_NEWER
+
 using System;
 using System.IO;
 using System.Linq;
@@ -189,3 +196,5 @@ namespace Ked.Progression.Tests
         }
     }
 }
+
+#endif
