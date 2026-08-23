@@ -45,7 +45,7 @@ namespace Ked.Progression.Tests
                 Node("ep_03"));
 
             ChapterAdvance advance =
-                ChapterTransition.Resolve(chapter, chapter.CreateInitialState());
+                ChapterTransition.Resolve(chapter, chapter.CreateProofEntryState());
 
             Assert.That(advance.Kind, Is.EqualTo(ChapterAdvanceKind.AwaitPlayerChoice));
 
@@ -69,7 +69,7 @@ namespace Ked.Progression.Tests
                 Node("ep_03"));
 
             ChapterAdvance advance =
-                ChapterTransition.Resolve(chapter, chapter.CreateInitialState());
+                ChapterTransition.Resolve(chapter, chapter.CreateProofEntryState());
 
             Assert.That(advance.Kind, Is.EqualTo(ChapterAdvanceKind.AutoAdvance));
             Assert.That(advance.AutoOption.TargetEpisodeId, Is.EqualTo("ep_03"));
@@ -86,7 +86,7 @@ namespace Ked.Progression.Tests
                 new EpisodeNode("ep_02", "끝", EpisodeKind.Main, "e2", null, "ch01_end"));
 
             ProgressionState atEnd = chapter
-                .CreateInitialState()
+                .CreateProofEntryState()
                 .Commit(chapter, chapter.StartNode.NextOptions[0]);
 
             ChapterAdvance advance = ChapterTransition.Resolve(chapter, atEnd);
@@ -110,7 +110,7 @@ namespace Ked.Progression.Tests
                 Node("ep_02"));
 
             ResolvedOption locked =
-                ChapterTransition.Resolve(chapter, chapter.CreateInitialState()).Options[0];
+                ChapterTransition.Resolve(chapter, chapter.CreateProofEntryState()).Options[0];
 
             Assert.That(locked.Visibility, Is.EqualTo(OptionVisibility.Locked));
             Assert.That(locked.IsSelectable, Is.False);
@@ -133,7 +133,7 @@ namespace Ked.Progression.Tests
                 Node("ep_02"));
 
             ResolvedOption locked =
-                ChapterTransition.Resolve(chapter, chapter.CreateInitialState()).Options[0];
+                ChapterTransition.Resolve(chapter, chapter.CreateProofEntryState()).Options[0];
 
             Assert.That(locked.LockedReason, Is.EqualTo(string.Empty));
             Assert.That(locked.BlockingCondition.IsConstructed, Is.True);
@@ -150,7 +150,7 @@ namespace Ked.Progression.Tests
                 Node("ep_02"));
 
             ChapterAdvance advance =
-                ChapterTransition.Resolve(chapter, chapter.CreateInitialState());
+                ChapterTransition.Resolve(chapter, chapter.CreateProofEntryState());
 
             Assert.That(advance.Options.Count, Is.EqualTo(1));
             Assert.That(advance.HiddenCount, Is.EqualTo(1),
@@ -169,7 +169,7 @@ namespace Ked.Progression.Tests
 
             ChapterProgression chapter = Chapter(Node("ep_01", loop, gate), Node("ep_02"));
 
-            ProgressionState before = chapter.CreateInitialState();
+            ProgressionState before = chapter.CreateProofEntryState();
             Assert.That(ChapterTransition.Resolve(chapter, before).Options[1].IsSelectable,
                 Is.False);
 
@@ -193,7 +193,7 @@ namespace Ked.Progression.Tests
                 Node("ep_02"));
 
             ChapterAdvance advance =
-                ChapterTransition.Resolve(chapter, chapter.CreateInitialState());
+                ChapterTransition.Resolve(chapter, chapter.CreateProofEntryState());
 
             Assert.That(advance.Options.Count, Is.EqualTo(1));
             Assert.That(advance.HiddenCount, Is.Zero, "자동 진행은 숨긴 선택지가 아니다");

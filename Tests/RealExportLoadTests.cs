@@ -65,7 +65,7 @@ namespace Ked.Progression.Tests
         /// </summary>
         private static string WalkToEnd(ChapterProgression chapter, int choiceIndex)
         {
-            ProgressionState state = chapter.CreateInitialState();
+            ProgressionState state = chapter.CreateProofEntryState();
             ChapterAdvance advance = ChapterTransition.Resolve(chapter, state);
 
             Assert.That(advance.Kind, Is.EqualTo(ChapterAdvanceKind.AwaitPlayerChoice));
@@ -158,7 +158,7 @@ namespace Ked.Progression.Tests
             // 견본은 세 갈래를 모두 지난다(자동 진행 → 선택 → 자동 진행 → 종료).
             ChapterProgression chapter = ProgressionLoader.Load(ReadFixture()).Chapter;
 
-            ProgressionState state = chapter.CreateInitialState();
+            ProgressionState state = chapter.CreateProofEntryState();
             var seen = new System.Collections.Generic.List<ChapterAdvanceKind>();
 
             for (int step = 0; step < 10; step++)

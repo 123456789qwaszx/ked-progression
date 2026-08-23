@@ -42,7 +42,7 @@ namespace Ked.Progression.Tests
                     new EpisodeNode("ep_02", "둘", EpisodeKind.Main, "e2"),
                 });
 
-            return chapter.CreateInitialState().Commit(chapter, exit);
+            return chapter.CreateProofEntryState().Commit(chapter, exit);
         }
 
         private static bool Met(ProgressionCondition condition, ProgressionState state) =>

@@ -48,7 +48,7 @@ namespace Ked.Progression.Tests
         [Test]
         public void 스탯_초기값으로_시작_상태를_만든다()
         {
-            ProgressionState state = TwoStep().CreateInitialState();
+            ProgressionState state = TwoStep().CreateProofEntryState();
 
             Assert.That(state.CurrentEpisodeId, Is.EqualTo("ep_01"));
             Assert.That(state.GetStat("trust"), Is.EqualTo(0));
@@ -67,7 +67,7 @@ namespace Ked.Progression.Tests
 
             ChapterProgression chapter = Chapter(Node("ep_01", exit), Node("ep_02"));
 
-            ProgressionState after = chapter.CreateInitialState().Commit(chapter, exit);
+            ProgressionState after = chapter.CreateProofEntryState().Commit(chapter, exit);
 
             Assert.That(after.GetStat("trust"), Is.EqualTo(5), "경계로 clamp된다");
             Assert.That(after.CurrentEpisodeId, Is.EqualTo("ep_02"));
@@ -96,7 +96,7 @@ namespace Ked.Progression.Tests
                 Node("ep_01", fromEp01),
                 Node("ep_02", fromEp02));
 
-            ProgressionState atEp01 = chapter.CreateInitialState();
+            ProgressionState atEp01 = chapter.CreateProofEntryState();
 
             Assert.DoesNotThrow(() => atEp01.Commit(chapter, fromEp01));
             Assert.Throws<ArgumentException>(() => atEp01.Commit(chapter, fromEp02));

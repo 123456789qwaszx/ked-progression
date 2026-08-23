@@ -81,10 +81,15 @@ namespace Ked.Progression
         public EpisodeNode StartNode => _nodesById[StartEpisodeId];
 
         /// <summary>
-        /// 이 챕터의 스탯 초기값으로 세운 시작 상태.
-        /// 실제 플레이가 아닌 테스트용.
+        /// <b>증명 진입 가정</b> — 이 챕터를 단독으로 걸을 때 "여기 들어온 순간"으로
+        /// 삼는 상태다. 챕터의 스탯 초기값으로 세운다.
+        ///
+        /// ⚠ <b>플레이 시작이 아니다.</b> 실제 플레이의 시작값은 시나리오가 한 번만
+        /// 세운다(D1) — <see cref="ScenarioProgression.CreateInitialState"/>. 둘은 다른
+        /// 값이고(픽스처가 일부러 trust 0 vs 5로 갈라 둔다), 잘못 부르면 예외 없이
+        /// 다른 초기값으로 게임이 시작된다. 타입이 못 막는 자리라 이름으로 가른다.
         /// </summary>
-        public ProgressionState CreateInitialState() =>
+        public ProgressionState CreateProofEntryState() =>
             ProgressionState.CreateInitial(Stats, ChapterId, StartEpisodeId);
 
         public override string ToString() =>
