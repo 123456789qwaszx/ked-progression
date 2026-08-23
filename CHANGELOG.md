@@ -6,6 +6,8 @@
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-08-23
+
 ### 추가 — 2026-08-23 (호스트 연결 · C1·C2·C4)
 - `ProgressionLoader.LoadAsSingleChapterScenario(ChapterProgressionDto)` — **챕터만 떼어
   테스트 플레이하는 길.** `ScenarioId` = `StartChapterId` = 챕터 ID, `Stats`는 챕터 것을
