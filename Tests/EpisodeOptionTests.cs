@@ -68,7 +68,7 @@ namespace Ked.Progression.Tests
         {
             // 관문만 없다. 자동 진행도 간선이므로 §G6-1의 1회 커밋을 그대로 한다.
             EpisodeOption auto = EpisodeOption.Auto(
-                "ep_02", new[] { new StatChange("trust", 1) });
+                "ep_02", new[] { StatChange.Add("trust", 1) });
 
             Assert.That(auto.StatChanges.Count, Is.EqualTo(1));
         }

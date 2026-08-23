@@ -303,6 +303,12 @@ namespace Ked.Progression
             string where,
             ICollection<ProgressionDiagnostic> into)
         {
+            // 같은 키를 두 번 '정하면' 어느 쪽이 사는지가 배열 순서에 달린다 — 순서가
+            // 뜻을 갖기 시작하면 시트에서 행을 옮기는 것만으로 결과가 바뀐다.
+            // (더하기끼리는 합쳐지므로 순서와 무관하고, 그래서 이 규칙에 걸리지 않는다.)
+            var setKeys = new HashSet<string>(StringComparer.Ordinal);
+            var reportedDuplicates = new HashSet<string>(StringComparer.Ordinal);
+
             for (int i = 0; i < changes.Count; i++)
             {
                 StatChange change = changes[i];
@@ -317,13 +323,62 @@ namespace Ked.Progression
                     continue;
                 }
 
+                if (change.Kind == StatChangeKind.Set)
+                {
+                    VerifySet(change, stat, at, setKeys, reportedDuplicates, into);
+                    continue;
+                }
+
                 // bool 스탯에 증감은 의미가 없다(0/1 사이를 +1로 오가면 clamp에 걸려
-                // 한 방향으로만 간다). 저작 쪽이 이미 오류로 막고 있다.
+                // 한 방향으로만 간다). 켜고 끄는 것은 Set이 한다.
                 if (stat.Type == StatType.Bool)
                 {
                     into.Add(ProgressionDiagnostic.Error(
-                        at, $"'{change.Key}'는 bool 스탯이라 증감을 쓸 수 없다(§G4)."));
+                        at,
+                        $"'{change.Key}'는 bool 스탯이라 증감을 쓸 수 없다(§G4). " +
+                        "켜고 끄려면 Op를 \"Set\"으로 둘 것."));
                 }
+            }
+        }
+
+        private static void VerifySet(
+            StatChange change,
+            StatDefinition stat,
+            string at,
+            HashSet<string> setKeys,
+            HashSet<string> reportedDuplicates,
+            ICollection<ProgressionDiagnostic> into)
+        {
+            // 숫자 스탯을 '정하면' 도달성 증명의 스탯 폭이 뜻을 잃는다 — 이 간선을
+            // 지난 순간 앞의 모든 경로가 하나로 접히기 때문이다. 깃발에만 연다.
+            if (stat.Type != StatType.Bool)
+            {
+                into.Add(ProgressionDiagnostic.Error(
+                    at,
+                    $"'{change.Key}'는 숫자 스탯이라 지정(Set)을 쓸 수 없다(§G4). " +
+                    "지정은 bool 스탯(깃발)에만 쓴다 — 증감이면 Op를 비우거나 \"Add\"로 둘 것."));
+
+                return;
+            }
+
+            if (change.Amount != 0 && change.Amount != 1)
+            {
+                into.Add(ProgressionDiagnostic.Error(
+                    at,
+                    $"'{change.Key}'는 bool 스탯이라 정할 값이 0 또는 1이어야 한다(§G4). " +
+                    $"받은 값: {change.Amount}. " +
+                    "조용히 clamp하면 작가가 쓴 값과 다른 값으로 켜진다."));
+
+                return;
+            }
+
+            if (!setKeys.Add(change.Key) && reportedDuplicates.Add(change.Key))
+            {
+                into.Add(ProgressionDiagnostic.Error(
+                    at,
+                    $"한 간선에서 '{change.Key}'를 두 번 정한다. 어느 쪽이 사는지가 " +
+                    "행 순서에 달리므로 시트에서 행을 옮기는 것만으로 결과가 바뀐다 — " +
+                    "하나만 남길 것."));
             }
         }
 

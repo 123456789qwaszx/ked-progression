@@ -401,7 +401,8 @@ namespace Ked.Progression
                     LoadConditions(dto.VisibleConditions, at + ".VisibleConditions", into);
                 List<ProgressionCondition> conditions =
                     LoadConditions(dto.Conditions, at + ".Conditions", into);
-                List<StatChange> changes = LoadStatChanges(dto.StatChanges);
+                List<StatChange> changes =
+                    LoadStatChanges(dto.StatChanges, at + ".StatChanges", into);
 
                 bool isAuto = string.IsNullOrEmpty(dto.ChoiceLabel);
 
@@ -527,7 +528,8 @@ namespace Ked.Progression
             return conditions;
         }
 
-        private static List<StatChange> LoadStatChanges(List<StatChangeDto> dtos)
+        private static List<StatChange> LoadStatChanges(
+            List<StatChangeDto> dtos, string where, List<ProgressionDiagnostic> into)
         {
             var changes = new List<StatChange>();
 
@@ -545,8 +547,31 @@ namespace Ked.Progression
                     continue;
                 }
 
+                string at = $"{where}[{i}]";
+
+                // 빈 칸은 Add다 — 이 칸이 서기 전에 나간 JSON이 그대로 실려야 한다.
+                if (string.IsNullOrEmpty(dto.Op))
+                {
+                    changes.Add(StatChange.Add(dto.Key, dto.Amount));
+                    continue;
+                }
+
+                if (!TryParseStatChangeOp(dto.Op, out StatChangeKind kind))
+                {
+                    // 규율 1 — 모르는 이름을 Add로 읽으면 깃발을 켜려던 간선이 아무것도
+                    // 안 하는 간선이 되고, 그 버그는 재생해 봐도 안 보인다.
+                    into.Add(ProgressionDiagnostic.Error(
+                        at,
+                        $"알 수 없는 스탯 변화 종류 '{dto.Op}'. 가능한 값: Add, Set " +
+                        "(비어 있으면 Add)."));
+
+                    continue;
+                }
+
                 // 키의 실재와 bool 어휘는 ChapterInvariants가 본다 — 여기서 또 보지 않는다.
-                changes.Add(new StatChange(dto.Key, dto.Amount));
+                changes.Add(kind == StatChangeKind.Set
+                    ? StatChange.Set(dto.Key, dto.Amount)
+                    : StatChange.Add(dto.Key, dto.Amount));
             }
 
             return changes;
@@ -564,6 +589,16 @@ namespace Ked.Progression
             {
                 case "Number": value = StatType.Number; return true;
                 case "Bool": value = StatType.Bool; return true;
+                default: value = default; return false;
+            }
+        }
+
+        private static bool TryParseStatChangeOp(string name, out StatChangeKind value)
+        {
+            switch (name)
+            {
+                case "Add": value = StatChangeKind.Add; return true;
+                case "Set": value = StatChangeKind.Set; return true;
                 default: value = default; return false;
             }
         }

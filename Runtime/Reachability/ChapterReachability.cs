@@ -239,7 +239,17 @@ namespace Ked.Progression
             complete = true;
         }
 
-        /// <summary>간선 증감 커밋. 경계는 탐색 경계라 밖은 잘라낸다.</summary>
+        /// <summary>
+        /// 간선의 스탯 변화 커밋. 경계는 탐색 경계라 밖은 잘라낸다.
+        ///
+        /// ⚠ <b>이 함수는 단조가 아니다.</b> <see cref="StatChangeKind.Set"/>이 현재 값을
+        /// 보지 않고 대입하므로, "간선을 지날수록 값이 한 방향으로만 간다"가 성립하지
+        /// 않는다. 스탯 폭(min/max)을 "지나온 증감의 합"으로 접는 최적화를 넣고 싶어지면
+        /// 여기를 먼저 볼 것 — Set이 그 접기를 무효로 만든다.
+        ///
+        /// 지금 탐색이 상태를 통째로 방문 집합에 넣는(State 키) 이유가 이것이다.
+        /// 폭만 들고 걸으면 Set이 지나간 뒤의 값이 틀린다.
+        /// </summary>
         private static int[] ApplyChanges(
             ChapterProgression chapter, int[] stats, IReadOnlyList<StatChange> changes)
         {
@@ -259,7 +269,7 @@ namespace Ked.Progression
                     continue;   // 미등록 키 — 생성자·로더가 이미 오류로 잡았다
                 }
 
-                next[index] = chapter.Stats[index].Clamp(next[index] + changes[c].Amount);
+                next[index] = chapter.Stats[index].Clamp(changes[c].ApplyTo(next[index]));
             }
 
             return next;

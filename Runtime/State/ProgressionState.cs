@@ -180,7 +180,7 @@ namespace Ked.Progression
                 if (!stats.TryGetValue(change.Key, out int current))
                     current = definition.Initial;
 
-                stats[change.Key] = definition.Clamp(current + change.Amount);
+                stats[change.Key] = definition.Clamp(change.ApplyTo(current));
             }
 
             var clearedEpisodes = new HashSet<string>(_clearedEpisodes, StringComparer.Ordinal);
@@ -295,18 +295,61 @@ namespace Ked.Progression
         }
     }
 
-    /// <summary>선택지가 커밋될 때 적용되는 스탯 증감.</summary>
+    /// <summary>스탯 변화의 종류.</summary>
+    public enum StatChangeKind
+    {
+        /// <summary>현재 값에 더한다. <c>Op</c>가 비어 있으면 이것이다.</summary>
+        Add = 0,
+
+        /// <summary>현재 값을 보지 않고 정한다. bool 스탯(깃발)에만 쓴다.</summary>
+        Set = 1,
+    }
+
+    /// <summary>선택지가 커밋될 때 적용되는 스탯 변화.</summary>
     public readonly struct StatChange
     {
         public string Key { get; }
+
+        /// <summary>
+        /// <see cref="StatChangeKind.Add"/>면 증감량, <see cref="StatChangeKind.Set"/>면
+        /// <b>정할 값</b>이다. 칸을 늘리지 않는 이유 — 둘이 되면 "어느 칸이 사는가"를
+        /// <see cref="Kind"/>와 따로 기억해야 하고, 안 사는 칸에 적힌 값이 조용히 사라진다.
+        /// </summary>
         public int Amount { get; }
 
-        public StatChange(string key, int amount)
+        public StatChangeKind Kind { get; }
+
+        // 공개 생성자를 열지 않는다(P1) — 종류를 안 적고 만드는 길을 없앤다.
+        // 타입이 bool 여부를 모르므로 Set에 2가 들어오는 것까지는 못 막는다.
+        // 그 값 검사는 ChapterInvariants가 하고 로더가 앞당긴다.
+        private StatChange(string key, int amount, StatChangeKind kind)
         {
             Key = key;
             Amount = amount;
+            Kind = kind;
         }
 
-        public override string ToString() => $"{Key} {(Amount >= 0 ? "+" : "")}{Amount}";
+        /// <summary>현재 값에 더한다.</summary>
+        public static StatChange Add(string key, int amount) =>
+            new StatChange(key, amount, StatChangeKind.Add);
+
+        /// <summary>현재 값을 보지 않고 정한다. bool 스탯에만.</summary>
+        public static StatChange Set(string key, int value) =>
+            new StatChange(key, value, StatChangeKind.Set);
+
+        /// <summary>
+        /// 이 변화를 현재 값에 적용한 결과. <b>경계 자르기는 부르는 쪽이 한다</b> —
+        /// 플레이는 <see cref="StatDefinition.Clamp"/>로, 증명은 탐색 경계로 자른다.
+        ///
+        /// 적용 규칙이 여기 하나만 있는 이유: 커밋과 도달성 증명이 각자 더하면
+        /// 언젠가 갈린다. 갈리면 "툴은 열린다는데 실제로는 안 열리는 관문"이 된다.
+        /// </summary>
+        public int ApplyTo(int current) =>
+            Kind == StatChangeKind.Set ? Amount : current + Amount;
+
+        public override string ToString() =>
+            Kind == StatChangeKind.Set
+                ? $"{Key} = {Amount}"
+                : $"{Key} {(Amount >= 0 ? "+" : "")}{Amount}";
     }
 }

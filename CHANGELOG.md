@@ -6,7 +6,63 @@
 
 ## [Unreleased]
 
-### 추가
+### 추가 — 2026-08-23 (호스트 연결 · C1·C4)
+- `StatChangeKind` · `StatChange.Add` / `StatChange.Set` / `StatChange.ApplyTo` —
+  **깃발을 켜고 끄는 칸.** 이 칸이 없어 깃발을 쓰는 챕터는 툴이 내보내기를 거부했다
+  (저작 쪽 결정 2026-08-19). `StatChangeDto.Op`가 이름 문자열로 실려 온다 —
+  비어 있거나 `"Add"`면 더하기, `"Set"`이면 정하기
+- `ChapterInvariants` 불변식 셋 — `Set`은 bool 스탯에만 · 정할 값은 0/1만 ·
+  한 간선에서 같은 키를 두 번 정하면 오류(어느 쪽이 사는지가 행 순서에 달린다)
+- `Tests/BoolStatSetTests.cs` — 불변식 · 커밋 · 로더 이름 변환 · **깃발이 관문을 여는 짝**
+  (켜는 길이 있으면 도달 가능 / 없으면 `BlockedByCondition`) · **껐다면 관문이 다시 닫힌다**
+- `ChapterProgression.CreateProofEntryState()` — 옛 이름 `CreateInitialState()`
+
+### 결정 — 2026-08-23
+- **`StatChange`의 공개 생성자를 닫고 팩토리 둘만 연다**(P1). 종류를 안 적고 만드는 길을
+  없앤다. 타입이 bool 여부를 모르므로 `Set`에 2가 오는 것까지는 못 막고, 그 값 검사는
+  `ChapterInvariants`가 한다 — 규칙을 위로 올린다(타입 > 생성자 > 로더)
+- **적용 규칙은 `StatChange.ApplyTo` 하나다.** 커밋(`ProgressionState.Commit`)과 도달성 증명
+  (`ChapterReachability.ApplyChanges`)이 각자 더하면 언젠가 갈리고, 갈리면 "툴은 열린다는데
+  실제로는 안 열리는 관문"이 된다. 경계 자르기만 부르는 쪽이 한다
+- **`Set`이 들어오면서 간선의 스탯 변화는 더 이상 단조가 아니다.** 스탯 폭(min/max)만 들고
+  걷는 최적화는 이제 틀린 답을 낸다 — 켰다 끄면 폭은 1을 기억하지만 실제 값은 0이다.
+  현재 탐색이 상태를 통째로 방문 집합에 넣는 이유가 이것이고, `BoolStatSetTests`의
+  "껐다면 관문이 다시 닫힌다"가 그 전제를 고정한다
+- **`Op`가 비어 있으면 `Add`는 의도된 기본이다.** 이 칸이 서기 전에 나간 챕터 JSON이
+  한 글자도 안 바뀌고 그대로 실려야 한다. 픽스처 4개와 코퍼스 7케이스로 고정
+- **개명은 이름으로만 가른다.** `chapter.CreateProofEntryState()`는 증명 진입 가정이고
+  플레이 시작은 `scenario.CreateInitialState()`다. 타입이 같아 못 막는 자리라
+  이름을 갈랐다. 프로덕션 호출부는 0건이었다
+
+### 추가 — 2026-08-20~21 (흐름 층 · 문서 2기)
+- `EpisodeFlow` · `FlowRequest` · `FlowRequestKind` · `EpisodePhase` — **호스트와 만나는 자리.**
+  에피소드 하나를 트랜잭션으로 굴리고 챕터 경계를 넘긴다. 코어는 아무것도 부르지 않는다 —
+  `Pending`에 값을 내놓고 멈추고, 호스트가 마쳤다고 알린다(`DialogueCompleted` · `Choose` ·
+  `ViaCompleted` · `SavePersisted`). `FlowRequestKind` 다섯이 외부 연결점의 전부다
+- `Tests/EpisodeFlowTests.cs` — 펌프의 모양
+- `docs/principles.md` — **규칙의 정본.** P1~P5 · D1~D5 · 규율 1~4 · §G 대응 · 경계면 · 성장 규칙.
+  코드 태그는 전부 여기서 정의된다
+- `docs/host-integration.md` — 유니티 `ProgressionDriver` 설계 · 세이브 블록 합성 · Avalonia 채택 순서 · 하지 말 것
+- `docs/design-review.md` — 외부 아키텍처 리뷰 수록 + 실측 대조
+- `docs/architecture.md` §2.9 흐름 · §2.10 증명 · `EpisodeOption.ViaNodeId` · `ProgressionSaveDto`
+- `docs/work-plan.md` 2기로 전면 개정 — 트랙 C(코어) · H(유니티) · T(VnTool) · E(표현력)
+- `docs/model-draft.md` → `docs/archive/`
+
+### 결정 — 2026-08-21
+- **펌프는 호스트의 단 한 곳이 쥔다.** 코어의 순수성은 코어 안에서 보장되지만 펌프의 단일성은
+  호스트가 지켜야 한다. 여러 객체가 `Pending`을 보면 순수성이 바깥에서 무너진다
+- **`SavePersisted()`는 "처리했다"지 "디스크에 썼다"가 아니다.** 오토세이브 정책·슬롯·실패 처리는
+  호스트 것. 안 쓰기로 했어도 부른다 — 흐름을 잇는 신호다
+- **`Resume`의 결과는 언제나 `EpisodeEntered`.** 줄 단위 이어 하기는 대사 블록을 가진 호스트가
+  그 노드 안을 시킹한다. 코어는 "그 에피소드"까지만 말한다
+- **2기에서 코어가 바뀌는 것은 넷뿐** — `StatChange` 지정(Set, 저작 쪽 결정 2026-08-19 수용) ·
+  단일 챕터 시나리오 헬퍼 · `CreateInitialState` 개명(`CreateProofEntryState`) · `.meta`. 나머지는 전부
+  호스트 쪽 작업이다
+- **설계 리뷰의 확장 제안(VisitCounts · MetaProgression · NotExists · Unknown)은 2기 비범위.**
+  소유권 선(전역 조건은 시나리오 층 간선에만)만 미리 긋고, 타입은 실제 콘텐츠가 요구할 때.
+  `NotExists`는 저작 파서가 먼저 열어야 한다 — 닫힌 채 넣으면 `NotEqual`과 같은 영원히 안 타는 분기
+
+### 추가 — 2026-08-18~19 (1기)
 - `ProgressionCondition` · `ConditionKind` — 조건 모델 (§G1·G2)
 - `StatDefinition` · `StatType` — **§G7의 빈칸.** 초기값·경계의 유일한 집
 - `ProgressionState` · `StatChange` — 불변 상태. 나중에 세이브가 담을 내용
@@ -182,15 +238,14 @@
 
 ### 예정
 
-순서와 게이트는 `docs/work-plan.md`. **게이트 G0~G5가 전부 닫혔다.**
+순서와 게이트는 `docs/work-plan.md`. **1기 게이트 G0~G5 전부 닫힘. 2기는 호스트 연결.**
 
-- **`0.2.0` 태그** — 소비자가 가져갈 만해졌다. 다만 유니티가 물려면 `.meta`가 먼저다
-- `.meta` 생성·커밋 — 한 번 임포트해 만든 뒤 가져와야 한다. **커밋된 GUID가 참조 안정성**이다
-- **챕터 연쇄 증명** — ch01 출구 스팬 → ch02 진입 가정. 안 셋과 권고는 `work-plan.md` §9.
-  콘텐츠가 실제로 둘 이상 이어진 뒤에 한다(지금은 검증할 실물이 없다)
-- 저작 쪽(X2·X3·X7) — `EndingRules` 내보내기 · 간선 `종류` 열 · `ViaNodeId` 발행 경로
-- 런타임(X5) — 진행 블록을 세이브에 싣기. **세이브 층 자체가 먼저 필요하다**
-- bool 스탯을 무엇이 켜나 — 간선으로는 값이 절대 안 바뀐다(`handoff.md` §6-4)
+- **C1 `StatChange` 지정(Set)** — `StatChangeDto.Op`(`"Add"` 기본 / `"Set"`, bool에만). 유일한 차단 항목
+- **C2** `ProgressionLoader.LoadAsSingleChapterScenario` — 시나리오 저작 전에 유니티가 돌기 위해
+- **C4** `ChapterProgression.CreateInitialState` → `CreateProofEntryState`
+- `.meta` 생성·커밋 → **`0.2.0` 태그**
+- 런타임(U-0~U-5) · VnTool(T1~T5 · X2·X3·X4) — `docs/host-integration.md`
+- 챕터 연쇄 증명 — 콘텐츠가 둘 이상 이어진 뒤 (`work-plan.md` §7)
 
 ## [0.1.0] - 2026-08-17
 
