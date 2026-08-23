@@ -62,7 +62,7 @@ namespace Ked.Progression.Tests
         [TestCase(ComparisonOp.LessThan, 3, false)]
         public void 스탯_비교(ComparisonOp op, int value, bool expected)
         {
-            ProgressionState state = StateWith(new StatChange("trust", 3));
+            ProgressionState state = StateWith(StatChange.Add("trust", 3));
 
             Assert.That(Met(ProgressionCondition.Stat("trust", op, value), state),
                 Is.EqualTo(expected));
@@ -71,8 +71,8 @@ namespace Ked.Progression.Tests
         [Test]
         public void 커밋은_경계로_clamp한다()
         {
-            Assert.That(StateWith(new StatChange("trust", 99)).GetStat("trust"), Is.EqualTo(5));
-            Assert.That(StateWith(new StatChange("trust", -99)).GetStat("trust"), Is.EqualTo(-5));
+            Assert.That(StateWith(StatChange.Add("trust", 99)).GetStat("trust"), Is.EqualTo(5));
+            Assert.That(StateWith(StatChange.Add("trust", -99)).GetStat("trust"), Is.EqualTo(-5));
         }
 
         // ── §G2 · §G4 ───────────────────────────────────────────────

@@ -63,7 +63,7 @@ namespace Ked.Progression.Tests
             // 셋이 한 연산이다 — 스탯 반영 · 클리어 표시 · 이동. 따로 부를 수 있으면
             // 언젠가 따로 불리고, 그 순간 "스탯만 바뀌고 안 옮겨 간" 상태가 생긴다.
             EpisodeOption exit = EpisodeOption.Choice(
-                "간다", "ep_02", statChanges: new[] { new StatChange("trust", 99) });
+                "간다", "ep_02", statChanges: new[] { StatChange.Add("trust", 99) });
 
             ChapterProgression chapter = Chapter(Node("ep_01", exit), Node("ep_02"));
 
@@ -149,7 +149,7 @@ namespace Ked.Progression.Tests
         {
             Assert.Throws<ArgumentException>(() => Chapter(
                 Node("ep_01", EpisodeOption.Choice(
-                    "간다", "ep_02", statChanges: new[] { new StatChange("trsut", 1) })),
+                    "간다", "ep_02", statChanges: new[] { StatChange.Add("trsut", 1) })),
                 Node("ep_02")));
         }
 
@@ -184,7 +184,7 @@ namespace Ked.Progression.Tests
             // 0/1 사이를 +1로 오가면 clamp에 걸려 한 방향으로만 간다.
             Assert.Throws<ArgumentException>(() => Chapter(
                 Node("ep_01", EpisodeOption.Choice(
-                    "간다", "ep_02", statChanges: new[] { new StatChange("met_willow", 1) })),
+                    "간다", "ep_02", statChanges: new[] { StatChange.Add("met_willow", 1) })),
                 Node("ep_02")));
         }
 

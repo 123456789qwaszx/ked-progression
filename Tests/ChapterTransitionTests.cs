@@ -162,7 +162,7 @@ namespace Ked.Progression.Tests
         {
             // ★ 관문이 실제로 잠그고 실제로 열리는지. 이것이 안 되면 나머지가 다 무의미하다.
             var loop = EpisodeOption.Choice(
-                "수련한다", "ep_01", statChanges: new[] { new StatChange("trust", 3) });
+                "수련한다", "ep_01", statChanges: new[] { StatChange.Add("trust", 3) });
 
             var gate = EpisodeOption.Choice(
                 "문을 연다", "ep_02", conditions: NeedsThree, lockedReasonText: "신뢰가 모자라다");
