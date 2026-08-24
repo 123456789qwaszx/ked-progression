@@ -24,7 +24,7 @@ namespace Ked.Progression.Tests
             new StatDefinition("met_willow", "윌로를 만남", StatType.Bool, 0, 0, 1);
 
         private static EpisodeNode Node(string id, params EpisodeOption[] options) =>
-            new EpisodeNode(id, id, EpisodeKind.Main, "entry_" + id, options);
+            new EpisodeNode(id, id, "entry_" + id, options);
 
         private static ChapterProgression Chapter(params EpisodeNode[] nodes) =>
             new ChapterProgression(
@@ -117,7 +117,7 @@ namespace Ked.Progression.Tests
                 Node("ep_03"));
 
             ProgressionState atEp02 = chapter
-                .CreateProofEntryState()
+                .CreateEntryState()
                 .Commit(chapter, chapter.StartNode.NextOptions[0]);
 
             Assert.That(atEp02.GetStat("met_willow"), Is.EqualTo(1));
@@ -142,7 +142,7 @@ namespace Ked.Progression.Tests
                 Node("ep_03"));
 
             ProgressionState atEp02 = chapter
-                .CreateProofEntryState()
+                .CreateEntryState()
                 .Commit(chapter, chapter.StartNode.NextOptions[0]);
 
             chapter.TryGetNode("ep_02", out EpisodeNode ep02);
@@ -164,7 +164,7 @@ namespace Ked.Progression.Tests
                 Node("ep_03"));
 
             ProgressionState atEp02 = chapter
-                .CreateProofEntryState()
+                .CreateEntryState()
                 .Commit(chapter, chapter.StartNode.NextOptions[0]);
 
             chapter.TryGetNode("ep_02", out EpisodeNode ep02);
@@ -307,7 +307,7 @@ namespace Ked.Progression.Tests
             fromStart.Add(EpisodeOption.Choice("그냥 간다", "ep_02"));
 
             return Chapter(
-                new EpisodeNode("ep_01", "ep_01", EpisodeKind.Main, "entry_ep_01", fromStart),
+                new EpisodeNode("ep_01", "ep_01", "entry_ep_01", fromStart),
                 Node("ep_02", EpisodeOption.Choice(
                     "문을 연다", "ep_gated",
                     conditions: new[]
@@ -354,7 +354,6 @@ namespace Ked.Progression.Tests
                     {
                         EpisodeId = "ep_01",
                         Title = "ep_01",
-                        Kind = "Main",
                         DialogueEntryId = "entry_ep_01",
                         NextOptions = new List<EpisodeOptionDto>
                         {
@@ -370,7 +369,6 @@ namespace Ked.Progression.Tests
                     {
                         EpisodeId = "ep_02",
                         Title = "ep_02",
-                        Kind = "Main",
                         DialogueEntryId = "entry_ep_02",
                     },
                 },

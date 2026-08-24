@@ -5,12 +5,8 @@
 // 코어가 파서를 갖지 않기 때문이고, 그래서 이 파일들은 dotnet CI에서만 돈다.
 #if !UNITY_2017_1_OR_NEWER
 
-using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text.Json;
-using Ked.Progression.Dto;
 using NUnit.Framework;
 
 namespace Ked.Progression.Tests
@@ -28,10 +24,13 @@ namespace Ked.Progression.Tests
     ///                     진행 ──┘                                │
     ///                       ▲                                     │
     ///                       └──────────[Commit]───────────────────┘
+    ///
+    ///   루프가 둘이다 — 바깥이 챕터, 안쪽이 에피소드.
+    ///   진행([2])의 수명이 챕터라 챕터마다 새로 만든다.
     /// </code>
     ///
-    /// <b>세 종류가 절대 안 섞인다</b> — 스펙은 콘텐츠와 함께 오고, 진행은 세이브에 남고,
-    /// 해석은 이 순간뿐이라 저장되지 않는다.
+    /// <b>세 종류가 절대 안 섞인다</b> — 스펙은 콘텐츠와 함께 오고, 진행은 챕터를 사는
+    /// 값이고, 해석은 이 순간뿐이라 저장되지 않는다.
     /// </summary>
     public sealed class ArchitectureWalkthroughTests
     {
@@ -43,72 +42,80 @@ namespace Ked.Progression.Tests
             // ── ① 스펙 — 데이터가 모델이 된다 ──────────────────────
             //
             // 호스트가 역직렬화하고(규율 2: JSON 파서를 안 갖는다), 로더가 검증한다.
+            // 시나리오는 저작물이 아니라 호스트가 챕터들을 묶은 것이다.
             // 오류가 하나라도 있으면 아무것도 나오지 않는다 — 부분 통과는 없다.
 
-            ScenarioLoadResult loaded = ProgressionLoader.Load(ReadScenario());
+            ScenarioLoadResult loaded =
+                ScenarioFixture.Load(ScenarioFixture.Read(ScenarioFixture.TwoChapters));
 
             Assert.That(loaded.HasErrors, Is.False, Diagnostics(loaded));
 
             ScenarioProgression scenario = loaded.Scenario;
 
-            trace.Add($"스펙   {scenario.ScenarioId} — 챕터 {scenario.Chapters.Count}, " +
-                      $"스탯 {scenario.Stats.Count}");
+            trace.Add($"스펙   {scenario.ScenarioId} — 챕터 {scenario.Chapters.Count}");
 
-            // ── ② 진행 — 새 게임 ──────────────────────────────────
-            //
-            // 시작값은 **시나리오가 한 번만** 세운다(D1). 챕터에 적힌 초기값은
-            // 도달성 증명의 진입 가정이지 실행값이 아니다.
+            // ── ② 루프 ────────────────────────────────────────────
 
-            ProgressionState state = scenario.CreateInitialState();
+            ChapterProgression chapter = scenario.StartChapter;
+            ProgressionState state = null;
+            int guard = 0;
 
-            trace.Add($"진행   새 게임 → {Where(state)}  {Stats(state)}");
-
-            // ── ③ 루프 ────────────────────────────────────────────
-
-            for (int guard = 0; guard < 20; guard++)
+            while (true)
             {
-                scenario.TryGetChapter(state.CurrentChapterId, out ChapterProgression chapter);
+                // 챕터 진입 — 진행 상태는 **챕터가** 만든다. 이전 챕터의 값은 안 넘어온다.
+                state = chapter.CreateEntryState();
 
-                // 에피소드 층 — 판단이 먼저, 실행이 나중 (P4).
-                // 조건 판정은 **커밋 전 값**으로 한다(§G6).
-                ChapterAdvance advance = ChapterTransition.Resolve(chapter, state);
+                trace.Add($"진행   {chapter.ChapterId} 진입 → {Where(chapter, state)}  {Stats(state)}");
 
-                if (advance.Kind == ChapterAdvanceKind.AwaitPlayerChoice)
+                while (true)
                 {
-                    int locked = advance.Options.Count(option => !option.IsSelectable);
+                    Assert.That(++guard, Is.LessThan(20), "20걸음 안에 안 끝난다.");
 
-                    trace.Add($"해석   {Where(state)}  선택 {advance.Options.Count} " +
-                              $"(잠김 {locked} · 숨김 {advance.HiddenCount})");
+                    // 에피소드 층 — 판단이 먼저, 실행이 나중 (P4).
+                    // 조건 판정은 **커밋 전 값**으로 한다.
+                    ChapterAdvance advance = ChapterTransition.Resolve(chapter, state);
 
-                    // 호스트가 고른다. 이 패키지는 목록을 만들 뿐 고르지 않는다.
-                    EpisodeOption chosen =
-                        advance.Options.First(option => option.IsSelectable).Option;
+                    if (advance.Kind == ChapterAdvanceKind.AwaitPlayerChoice)
+                    {
+                        int locked = advance.Options.Count(option => !option.IsSelectable);
 
-                    // 스탯 반영 · 클리어 표시 · 이동이 **한 연산**이다(트랜잭션 경계).
-                    state = state.Commit(chapter, chosen);
+                        trace.Add($"해석   {Where(chapter, state)}  선택 {advance.Options.Count} " +
+                                  $"(잠김 {locked} · 숨김 {advance.HiddenCount})");
 
-                    trace.Add($"커밋   [{chosen.ChoiceLabel}] → {state.CurrentEpisodeId}  {Stats(state)}");
-                    continue;
+                        // 호스트가 고른다. 이 패키지는 목록을 만들 뿐 고르지 않는다.
+                        EpisodeOption chosen =
+                            advance.Options.First(option => option.IsSelectable).Option;
+
+                        // 스탯 반영과 이동이 **한 연산**이다(트랜잭션 경계).
+                        state = state.Commit(chapter, chosen);
+
+                        trace.Add($"커밋   [{chosen.ChoiceLabel}] → {state.CurrentEpisodeId}  {Stats(state)}");
+                        continue;
+                    }
+
+                    if (advance.Kind == ChapterAdvanceKind.AutoAdvance)
+                    {
+                        trace.Add($"해석   {Where(chapter, state)}  자동 진행");
+
+                        state = state.Commit(chapter, advance.AutoOption);
+
+                        trace.Add($"커밋   (자동) → {state.CurrentEpisodeId}  {Stats(state)}");
+                        continue;
+                    }
+
+                    break;
                 }
-
-                if (advance.Kind == ChapterAdvanceKind.AutoAdvance)
-                {
-                    trace.Add($"해석   {Where(state)}  자동 진행");
-
-                    state = state.Commit(chapter, advance.AutoOption);
-
-                    trace.Add($"커밋   (자동) → {state.CurrentEpisodeId}  {Stats(state)}");
-                    continue;
-                }
-
-                trace.Add($"해석   {Where(state)}  챕터 끝 ({advance.EndingKey})");
 
                 // ── 챕터 경계 — 시나리오 층이 다음을 정한다 ─────────
                 //
-                // 엔딩키는 **노드가 정한다**(D2). Resolve가 그 키를 인자로 받지 않고
-                // 지금 노드에서 읽으므로, 호출자가 엉뚱한 키를 넘길 자리가 없다.
+                // 엔딩키는 **노드가 정한다**. Resolve가 그 키를 인자로 받지 않고 지금
+                // 노드에서 읽으므로, 호출자가 엉뚱한 키를 넘길 자리가 없다.
 
-                ScenarioAdvance next = ScenarioTransition.Resolve(scenario, state);
+                chapter.TryGetNode(state.CurrentEpisodeId, out EpisodeNode last);
+
+                trace.Add($"해석   {Where(chapter, state)}  챕터 끝 ({last.EndingKey})");
+
+                ScenarioAdvance next = ScenarioTransition.Resolve(chapter, state);
 
                 if (next.Kind != ScenarioAdvanceKind.NextChapter)
                 {
@@ -118,37 +125,37 @@ namespace Ked.Progression.Tests
 
                 trace.Add($"해석   {next.EndingKey} → {next.NextChapterId}");
 
-                state = state.CommitChapterEnding(scenario, next);
-
-                trace.Add($"커밋   챕터 경계 → {Where(state)}  {Stats(state)}");
+                Assert.That(scenario.TryGetChapter(next.NextChapterId, out chapter), Is.True);
             }
 
             // ── 흐름 전체가 여기 한 눈에 ───────────────────────────
+            //
+            // ch01에서 2까지 올린 trust가 ch02 진입에서 0으로 다시 서는 것이 보인다.
+            // 그것이 "[2]의 수명은 챕터"의 전부다.
 
             Assert.That(trace, Is.EqualTo(new[]
             {
-                "스펙   demo — 챕터 3, 스탯 1",
-                "진행   새 게임 → ch01/ep_01  trust=0",
+                "스펙   demo — 챕터 3",
+                "진행   ch01 진입 → ch01/ep_01  trust=0",
                 "해석   ch01/ep_01  선택 2 (잠김 0 · 숨김 0)",
                 "커밋   [믿는다] → ep_end  trust=2",
                 "해석   ch01/ep_end  챕터 끝 (ch01_done)",
                 "해석   ch01_done → ch02_trusted",
-                "커밋   챕터 경계 → ch02_trusted/ep_a  trust=2",
+                "진행   ch02_trusted 진입 → ch02_trusted/ep_a  trust=0",
                 "해석   ch02_trusted/ep_a  자동 진행",
-                "커밋   (자동) → ep_b  trust=2",
+                "커밋   (자동) → ep_b  trust=0",
                 "해석   ch02_trusted/ep_b  챕터 끝 (good_end)",
                 "해석   good_end → 시나리오 종료",
             }), string.Join("\n", trace));
 
-            // ── ④ 남는 것 / 안 남는 것 ────────────────────────────
+            // ── ③ 무엇이 상태이고 무엇이 아닌가 ────────────────────
             //
-            // 진행은 세이브가 담을 내용이고, 해석은 담지 않는다(P3).
-            // 구 런타임은 이 둘을 한 자루에 넣어 세이브에 옛 판정이 섞일 길을 열어 두었다.
+            // 진행은 챕터를 사는 값이고, 해석은 이 순간뿐이라 상태가 아니다(P3).
 
-            Assert.That(state.GetStat("trust"), Is.EqualTo(2), "스탯이 챕터를 넘어왔다");
-            Assert.That(state.ClearedChapterIds, Is.EquivalentTo(new[] { "ch01" }));
-            Assert.That(state.EndingHistory.Select(ending => ending.ToString()),
-                Is.EqualTo(new[] { "ch01:ch01_done" }));
+            Assert.That(state.GetStat("trust"), Is.EqualTo(0), "챕터를 넘으며 다시 섰다");
+
+            // 챕터 수명 객체라 "지금 어느 챕터인가"를 들지 않는다 — 그건 굴리는 쪽이 안다.
+            Assert.That(typeof(ProgressionState).GetProperty("CurrentChapterId"), Is.Null);
 
             Assert.That(typeof(ProgressionState).GetProperty("Options"), Is.Null);
             Assert.That(typeof(ProgressionState).GetProperty("LockedEpisodeIds"), Is.Null);
@@ -163,9 +170,10 @@ namespace Ked.Progression.Tests
             //   진행 → 연출   : EpisodeOption.ViaNodeId       (지나며 거쳐 갈 것)
             //   에피소드 → 챕터: EpisodeNode.EndingKey         (어느 엔딩으로 끝났나)
             //
-            // 셋 다 **호스트가 푸는 이름 하나**다. 종류가 늘어난 게 아니라 같은 종류가
-            // 하나 더 는 것이라 층 구조는 그대로다. 이 패키지는 셋 다 내용을 모른다.
-            ScenarioProgression scenario = ProgressionLoader.Load(ReadScenario()).Scenario;
+            // 셋 다 **호스트가 푸는 이름 하나**다. 이 패키지는 셋 다 내용을 모른다.
+            ScenarioProgression scenario =
+                ScenarioFixture.Load(ScenarioFixture.Read(ScenarioFixture.TwoChapters)).Scenario;
+
             ChapterProgression chapter = scenario.StartChapter;
 
             Assert.That(chapter.StartNode.DialogueEntryId, Is.EqualTo("ch01_01"));
@@ -186,16 +194,8 @@ namespace Ked.Progression.Tests
 
         // ── 그릇 ────────────────────────────────────────────────────
 
-        private static ScenarioProgressionDto ReadScenario()
-        {
-            string path = Path.Combine(
-                AppContext.BaseDirectory, "Fixtures", "scenario-two-chapters.json");
-
-            return JsonSerializer.Deserialize<ScenarioProgressionDto>(File.ReadAllText(path));
-        }
-
-        private static string Where(ProgressionState state) =>
-            $"{state.CurrentChapterId}/{state.CurrentEpisodeId}";
+        private static string Where(ChapterProgression chapter, ProgressionState state) =>
+            $"{chapter.ChapterId}/{state.CurrentEpisodeId}";
 
         private static string Stats(ProgressionState state) =>
             string.Join(" ", state.Stats.Select(pair => $"{pair.Key}={pair.Value}"));

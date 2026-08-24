@@ -24,7 +24,7 @@ namespace Ked.Progression.Tests
         };
 
         private static EpisodeNode Node(string id, params EpisodeOption[] options) =>
-            new EpisodeNode(id, id, EpisodeKind.Main, "entry_" + id, options);
+            new EpisodeNode(id, id, "entry_" + id, options);
 
         private static ChapterProgression Chapter(params EpisodeNode[] nodes) =>
             new ChapterProgression("ch_01", "첫 챕터", "ep_01", new[] { Trust }, nodes);
@@ -45,7 +45,7 @@ namespace Ked.Progression.Tests
                 Node("ep_03"));
 
             ChapterAdvance advance =
-                ChapterTransition.Resolve(chapter, chapter.CreateProofEntryState());
+                ChapterTransition.Resolve(chapter, chapter.CreateEntryState());
 
             Assert.That(advance.Kind, Is.EqualTo(ChapterAdvanceKind.AwaitPlayerChoice));
 
@@ -69,7 +69,7 @@ namespace Ked.Progression.Tests
                 Node("ep_03"));
 
             ChapterAdvance advance =
-                ChapterTransition.Resolve(chapter, chapter.CreateProofEntryState());
+                ChapterTransition.Resolve(chapter, chapter.CreateEntryState());
 
             Assert.That(advance.Kind, Is.EqualTo(ChapterAdvanceKind.AutoAdvance));
             Assert.That(advance.AutoOption.TargetEpisodeId, Is.EqualTo("ep_03"));
@@ -83,16 +83,19 @@ namespace Ked.Progression.Tests
         {
             ChapterProgression chapter = Chapter(
                 Node("ep_01", EpisodeOption.Choice("간다", "ep_02")),
-                new EpisodeNode("ep_02", "끝", EpisodeKind.Main, "e2", null, "ch01_end"));
+                new EpisodeNode("ep_02", "끝", "e2", null, "ch01_end"));
 
             ProgressionState atEnd = chapter
-                .CreateProofEntryState()
+                .CreateEntryState()
                 .Commit(chapter, chapter.StartNode.NextOptions[0]);
 
             ChapterAdvance advance = ChapterTransition.Resolve(chapter, atEnd);
 
             Assert.That(advance.Kind, Is.EqualTo(ChapterAdvanceKind.ChapterEnded));
-            Assert.That(advance.EndingKey, Is.EqualTo("ch01_end"));
+
+            // 엔딩키는 해석 결과가 아니라 노드가 진다 — 시나리오 층이 거기서 읽는다.
+            chapter.TryGetNode(atEnd.CurrentEpisodeId, out EpisodeNode last);
+            Assert.That(last.EndingKey, Is.EqualTo("ch01_end"));
         }
 
         // ── 관문 ────────────────────────────────────────────────────
@@ -110,9 +113,8 @@ namespace Ked.Progression.Tests
                 Node("ep_02"));
 
             ResolvedOption locked =
-                ChapterTransition.Resolve(chapter, chapter.CreateProofEntryState()).Options[0];
+                ChapterTransition.Resolve(chapter, chapter.CreateEntryState()).Options[0];
 
-            Assert.That(locked.Visibility, Is.EqualTo(OptionVisibility.Locked));
             Assert.That(locked.IsSelectable, Is.False);
             Assert.That(locked.LockedReason, Is.EqualTo("아직 그를 믿지 못한다"));
 
@@ -133,7 +135,7 @@ namespace Ked.Progression.Tests
                 Node("ep_02"));
 
             ResolvedOption locked =
-                ChapterTransition.Resolve(chapter, chapter.CreateProofEntryState()).Options[0];
+                ChapterTransition.Resolve(chapter, chapter.CreateEntryState()).Options[0];
 
             Assert.That(locked.LockedReason, Is.EqualTo(string.Empty));
             Assert.That(locked.BlockingCondition.IsConstructed, Is.True);
@@ -145,12 +147,12 @@ namespace Ked.Progression.Tests
             ChapterProgression chapter = Chapter(
                 Node("ep_01",
                     EpisodeOption.Choice("설득한다", "ep_02",
-                        conditions: NeedsThree, hideWhenLocked: true),
+                        visibleConditions: NeedsThree),
                     EpisodeOption.Choice("떠난다", "ep_02")),
                 Node("ep_02"));
 
             ChapterAdvance advance =
-                ChapterTransition.Resolve(chapter, chapter.CreateProofEntryState());
+                ChapterTransition.Resolve(chapter, chapter.CreateEntryState());
 
             Assert.That(advance.Options.Count, Is.EqualTo(1));
             Assert.That(advance.HiddenCount, Is.EqualTo(1),
@@ -169,7 +171,7 @@ namespace Ked.Progression.Tests
 
             ChapterProgression chapter = Chapter(Node("ep_01", loop, gate), Node("ep_02"));
 
-            ProgressionState before = chapter.CreateProofEntryState();
+            ProgressionState before = chapter.CreateEntryState();
             Assert.That(ChapterTransition.Resolve(chapter, before).Options[1].IsSelectable,
                 Is.False);
 
@@ -193,7 +195,7 @@ namespace Ked.Progression.Tests
                 Node("ep_02"));
 
             ChapterAdvance advance =
-                ChapterTransition.Resolve(chapter, chapter.CreateProofEntryState());
+                ChapterTransition.Resolve(chapter, chapter.CreateEntryState());
 
             Assert.That(advance.Options.Count, Is.EqualTo(1));
             Assert.That(advance.HiddenCount, Is.Zero, "자동 진행은 숨긴 선택지가 아니다");
@@ -205,8 +207,10 @@ namespace Ked.Progression.Tests
             // §G5의 "목록에 만들지 않는다"를 그대로 옮기면 숨긴 것은 목록에 **없는 것**이다.
             // Hidden 값을 두면 호스트가 전부 그리다 숨겨야 할 것을 보여 주는 사고가 열리고,
             // 그 값은 어차피 아무도 그리면 안 되므로 영원히 안 타는 분기가 된다.
-            Assert.That(Enum.GetNames(typeof(OptionVisibility)),
-                Is.EqualTo(new[] { "Shown", "Locked" }));
+            //
+            // 몇 개가 빠졌는지는 HiddenCount가 나른다 — 로그가 보는 값이지 그리는 값이 아니다.
+            Assert.That(typeof(ResolvedOption).GetProperty("Visibility"), Is.Null);
+            Assert.That(typeof(ResolvedOption).GetProperty("IsHidden"), Is.Null);
         }
 
         [Test]
@@ -224,12 +228,14 @@ namespace Ked.Progression.Tests
         }
 
         [Test]
-        public void 다른_챕터의_상태를_넘기면_거부한다()
+        public void 이_챕터에_없는_에피소드를_가리키면_거부한다()
         {
+            // 진행 상태는 챕터 수명이라 "어느 챕터의 것인가"를 스스로 들지 않는다.
+            // 그래서 짝이 맞는지는 여기서, 에피소드가 실재하는가로 본다.
             ChapterProgression chapter = Chapter(Node("ep_01"), Node("ep_02"));
 
             ProgressionState elsewhere = ProgressionState
-                .CreateInitial(new[] { Trust }, "ch_99", "없는에피소드");
+                .CreateInitial(new[] { Trust }, "없는에피소드");
 
             Assert.Throws<ArgumentException>(() =>
                 ChapterTransition.Resolve(chapter, elsewhere));

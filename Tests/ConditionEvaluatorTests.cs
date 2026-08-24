@@ -38,11 +38,11 @@ namespace Ked.Progression.Tests
                 "ch_01", "첫 챕터", "ep_01", Stats,
                 new[]
                 {
-                    new EpisodeNode("ep_01", "첫", EpisodeKind.Main, "e1", new[] { exit }),
-                    new EpisodeNode("ep_02", "둘", EpisodeKind.Main, "e2"),
+                    new EpisodeNode("ep_01", "첫", "e1", new[] { exit }),
+                    new EpisodeNode("ep_02", "둘", "e2"),
                 });
 
-            return chapter.CreateProofEntryState().Commit(chapter, exit);
+            return chapter.CreateEntryState().Commit(chapter, exit);
         }
 
         private static bool Met(ProgressionCondition condition, ProgressionState state) =>
@@ -96,26 +96,14 @@ namespace Ked.Progression.Tests
             Assert.That(Met(raruIsFalse, state), Is.False, "초기값 1이므로 거짓");
         }
 
-        // ── Cleared 계열 ────────────────────────────────────────────
+        // ── 조건은 스탯 하나뿐이다 ──────────────────────────────────
 
         [Test]
-        public void 클리어한_에피소드를_판정한다()
+        public void 조건의_갈래는_스탯_하나다()
         {
-            ProgressionState state = StateWith();
-
-            Assert.That(Met(ProgressionCondition.EpisodeCleared("ep_01"), state), Is.True);
-            Assert.That(Met(ProgressionCondition.EpisodeCleared("ep_09"), state), Is.False);
-        }
-
-        [Test]
-        public void 클리어한_챕터를_판정한다()
-        {
-            // 챕터를 넘나드는 조건은 이것 하나뿐이다. 앞선 진행은 시작 상태에 실려 온다.
-            ProgressionState state = ProgressionState
-                .CreateInitial(Stats, "ch_01", "ep_01", new[] { "ch_00" });
-
-            Assert.That(Met(ProgressionCondition.ChapterCleared("ch_00"), state), Is.True);
-            Assert.That(Met(ProgressionCondition.ChapterCleared("ch_99"), state), Is.False);
+            // 클리어 이력·본 라인 같은 것은 [1] 영구 계층의 것이라 걷어냈다. 그 계층이
+            // 서면 갈래가 다시 늘고, 그때까지 조건이 볼 수 있는 것은 스탯뿐이다.
+            Assert.That(Enum.GetNames(typeof(ConditionKind)), Is.EqualTo(new[] { "Stat" }));
         }
 
         // ── 규율 1: 침묵 금지 ───────────────────────────────────────
@@ -134,16 +122,10 @@ namespace Ked.Progression.Tests
         // ── P1: 무효 조합이 만들어지지 않는다 ───────────────────────
 
         [Test]
-        public void Cleared_조건의_연산은_고를_수_없다()
+        public void 조건은_팩토리로만_만들어진다()
         {
-            // 전에는 EpisodeCleared에 GreaterOrEqual을 붙일 수 있었고, 평가기가 그것을
-            // 예외로 잡았다. 이제는 팩토리가 연산을 정하므로 잘못 붙일 자리가 없다 —
-            // 그래서 평가기에서 그 검사가 사라졌고, 그만큼 안쪽이 전체 함수에 가까워졌다.
-            Assert.That(ProgressionCondition.EpisodeCleared("ep_01").Op,
-                Is.EqualTo(ComparisonOp.Exists));
-            Assert.That(ProgressionCondition.ChapterCleared("ch_01").Op,
-                Is.EqualTo(ComparisonOp.Exists));
-
+            // 생성자가 열려 있으면 무효 조합을 손으로 만들 수 있고, 그러면 평가기가
+            // 그것을 다시 검사해야 한다. 팩토리만 두면 안쪽이 전체 함수로 남는다.
             Assert.That(typeof(ProgressionCondition).GetConstructors(), Is.Empty);
         }
 
@@ -152,8 +134,8 @@ namespace Ked.Progression.Tests
         {
             Assert.Throws<ArgumentException>(() =>
                 ProgressionCondition.Stat(string.Empty, ComparisonOp.Equal, 1));
-            Assert.Throws<ArgumentException>(() => ProgressionCondition.EpisodeCleared(null));
-            Assert.Throws<ArgumentException>(() => ProgressionCondition.ChapterCleared(null));
+            Assert.Throws<ArgumentException>(() =>
+                ProgressionCondition.Stat(null, ComparisonOp.Equal, 1));
         }
 
         [Test]

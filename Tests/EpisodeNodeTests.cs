@@ -9,7 +9,7 @@ namespace Ked.Progression.Tests
     public sealed class EpisodeNodeTests
     {
         private static EpisodeNode NodeWith(params EpisodeOption[] options) =>
-            new EpisodeNode("ep_01", "첫 에피소드", EpisodeKind.Main, "Chapter1_Ep01", options);
+            new EpisodeNode("ep_01", "첫 에피소드", "Chapter1_Ep01", options);
 
         [Test]
         public void 자동_진행_간선을_찾는다()
@@ -65,7 +65,7 @@ namespace Ked.Progression.Tests
             Assert.That(NodeWith().IsEndingCandidate, Is.False);
 
             var ending = new EpisodeNode(
-                "ep_09", "마지막", EpisodeKind.Main, "Chapter1_Ep09",
+                "ep_09", "마지막", "Chapter1_Ep09",
                 endingKey: "ch01_good_end");
 
             Assert.That(ending.IsEndingCandidate, Is.True);
@@ -78,7 +78,7 @@ namespace Ked.Progression.Tests
         public void 에피소드_ID가_비면_거부한다()
         {
             Assert.Throws<ArgumentException>(() =>
-                new EpisodeNode(string.Empty, "제목", EpisodeKind.Main, "entry"));
+                new EpisodeNode(string.Empty, "제목", "entry"));
         }
 
         [Test]
