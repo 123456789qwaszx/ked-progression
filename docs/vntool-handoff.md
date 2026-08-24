@@ -2,8 +2,12 @@
 
 기준: 2026-08-18 (2차) · `ked-progression` `dev` · 테스트 **140 통과** · 빌드 경고 0
 
-> 1차에 적었던 것 중 닫힌 것은 걷어냈다. **이 파일 하나가 최신이다.**
-> 보내 준 `progression-handoff.md` 2차에 대한 회신이기도 하다.
+> 1차에 적었던 것 중 닫힌 것은 걷어냈다. 보내 준 `progression-handoff.md` 2차에 대한 회신이다.
+>
+> **⚠ 2026-08-21 — 이 문서는 2차 회신 기록이다. 저작 쪽 3차 회신(`java-start/docs/progression-handoff.md`,
+> 2026-08-19)이 더 최신이고, 거기서 닫힌 것: `ViaNodeId` 내보내기 ✅ · 키 이름 글자 검증 ✅ ·
+> 연출 실린 표본 ✅(`Tests/Fixtures/chapter-ch01-sample.json`) · 증명기 변경 통보를 코드에 못 박음 ✅.
+> 거기서 **이쪽에 새로 부탁한 것**: 깃발을 켜는 `StatChange` 지정(Set) 칸 — `work-plan.md` C1.**
 
 ---
 

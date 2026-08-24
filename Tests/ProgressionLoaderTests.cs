@@ -38,11 +38,10 @@ namespace Ked.Progression.Tests
             new EpisodeNodeDto
             {
                 EpisodeId = id, Title = id, IndexText = string.Empty,
-                Kind = "Main", DialogueEntryId = "entry_" + id,
+                DialogueEntryId = "entry_" + id,
                 VisibleConditions = new List<ConditionDto>(),
                 UnlockConditions = new List<ConditionDto>(),
                 NextOptions = new List<EpisodeOptionDto>(options),
-                Attachments = new List<object>(),
                 IsChapterEndingCandidate = false,
                 EndingKey = string.Empty,
                 DesignerNote = string.Empty,
@@ -133,14 +132,6 @@ namespace Ked.Progression.Tests
             Assert.That(Text(result), Does.Contain("Number"));
         }
 
-        [Test]
-        public void 알_수_없는_에피소드_종류를_거부한다()
-        {
-            ChapterProgressionDto dto = TwoStep();
-            dto.Nodes[0].Kind = "main";   // 대소문자가 다르면 다른 이름이다
-
-            Assert.That(ProgressionLoader.Load(dto).HasErrors, Is.True);
-        }
 
         [Test]
         public void 알_수_없는_조건_이름을_거부한다()
@@ -151,7 +142,7 @@ namespace Ked.Progression.Tests
 
             ProgressionLoadResult result = ProgressionLoader.Load(dto);
             Assert.That(result.HasErrors, Is.True);
-            Assert.That(Text(result), Does.Contain("Stat, EpisodeCleared, ChapterCleared"));
+            Assert.That(Text(result), Does.Contain("가능한 값: Stat"));
         }
 
         [Test]
@@ -169,17 +160,18 @@ namespace Ked.Progression.Tests
         }
 
         [Test]
-        public void Cleared에_다른_연산이_오면_조용히_바꾸지_않는다()
+        public void 폐지된_조건_이름은_모르는_이름으로_잡힌다()
         {
-            // 팩토리가 Exists로 고정하므로 그냥 만들면 통과해 버린다. 그건 뜻이 달라지는
-            // 변환이므로 로더가 막는다.
+            // EpisodeCleared·ChapterCleared는 [1] 영구 계층의 것이라 걷어냈다.
+            // ConditionKind를 한 갈래짜리 열거형으로 남긴 이유가 이것이다 — 옛 데이터가
+            // 조용히 Stat 조건으로 미끄러지지 않고 "모르는 이름"으로 잡힌다.
             ChapterProgressionDto dto = TwoStep();
             dto.Nodes[0].NextOptions[0].Conditions.Add(
-                new ConditionDto { Kind = "EpisodeCleared", Key = "ep_02", Op = "Equal" });
+                new ConditionDto { Kind = "EpisodeCleared", Key = "ep_02", Op = "Exists" });
 
             ProgressionLoadResult result = ProgressionLoader.Load(dto);
             Assert.That(result.HasErrors, Is.True);
-            Assert.That(Text(result), Does.Contain("Exists만 쓴다"));
+            Assert.That(Text(result), Does.Contain("알 수 없는 조건 종류"));
         }
 
         // ── 왔는데 안 쓰는 값 — 조용히 사라지면 안 된다 ─────────────
@@ -198,14 +190,6 @@ namespace Ked.Progression.Tests
             Assert.That(Text(result), Does.Contain("조용히 사라져"));
         }
 
-        [Test]
-        public void 부착이_오면_거부한다()
-        {
-            ChapterProgressionDto dto = TwoStep();
-            dto.Nodes[1].Attachments.Add(new object());
-
-            Assert.That(ProgressionLoader.Load(dto).HasErrors, Is.True);
-        }
 
         // ── 엔딩 규칙 (D2) ──────────────────────────────────────────
 
@@ -336,7 +320,7 @@ namespace Ked.Progression.Tests
         // ── 자동 진행 (D5) ──────────────────────────────────────────
 
         [Test]
-        public void 문구가_비면_자동_진행으로_읽고_한_줄로_알린다()
+        public void 문구가_비면_자동_진행으로_읽는다()
         {
             ChapterProgressionDto dto = Chapter(
                 Node("ep_01", Auto("ep_02")),
@@ -349,12 +333,9 @@ namespace Ked.Progression.Tests
             Assert.That(result.Chapter.Nodes[0].NextOptions[0].Kind,
                 Is.EqualTo(OptionKind.AutoAdvance));
 
-            // 간선마다 경고를 내면 흔한 경우라 소음이 되고, 소음은 읽히지 않는다.
-            List<ProgressionDiagnostic> warnings = result.Diagnostics
-                .Where(d => d.Severity == ProgressionDiagnosticSeverity.Warning).ToList();
-
-            Assert.That(warnings.Count, Is.EqualTo(1));
-            Assert.That(warnings[0].Message, Does.Contain("2개"));
+            // 문구가 없으면 자동 진행 — 그것이 규약이지 추측이 아니므로 알릴 일이 아니다.
+            // 올바른 데이터에 늘 뜨는 경고는 읽히지 않는다.
+            Assert.That(result.Diagnostics, Is.Empty, Text(result));
         }
 
         [Test]

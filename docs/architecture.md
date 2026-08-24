@@ -1,9 +1,10 @@
 # 아키텍처 — 원칙과 타입
 
-기준: 2026-08-18 · **이 문서가 타입의 정본이다.** 코드와 갈리면 코드가 이기지만,
+기준: 2026-08-21 · **이 문서가 타입의 정본이다.** 코드와 갈리면 코드가 이기지만,
 갈렸다는 것은 둘 중 하나가 틀렸다는 뜻이므로 반드시 맞춘다.
 
-[`model-draft.md`](model-draft.md)는 v0 기록으로 남는다 — 이 문서가 그것을 대체한다.
+규칙(P·D·규율·§G)의 정본은 [`principles.md`](principles.md)다 — 여기서는 타입이 그 규칙을
+**어떻게** 구현하는지만 말한다. [`archive/model-draft.md`](archive/model-draft.md)는 v0 기록.
 
 ---
 
@@ -32,63 +33,17 @@
 
 ---
 
-## 1. 원칙 다섯
+## 1. 원칙 다섯 — 정의는 `principles.md`, 여기는 출처만
 
-### P1 — 불가능한 상태를 만들 수 없게 한다
+| | 한 줄 | 어디서 배웠나 |
+|---|---|---|
+| **P1** | 불가능한 상태를 만들 수 없게 한다 | `GateToken.Immediately` — *"An explicit token used to represent 'none'"* |
+| **P2** | 검증은 경계에, 안쪽은 전체 함수 | test13 `EpisodeConditionEvaluator.cs:100/:193`, `StepGateAdvancer.cs:79`의 `default: return false`가 무너뜨린 것 |
+| **P3** | 스펙 / 진행 / 해석을 섞지 않는다 | `GateInFlight` — *"meaningful only while the token is in-flight"* |
+| **P4** | 계획을 먼저 확정하고, 그 뒤엔 커서만 움직인다 | `StepGatePlanBuilder` → `StepGateAdvancer` |
+| **P5** | 조용히 버리지 않는다 | `Ked.Presentation.Core` 규율 1 |
 
-`GateToken`에서 배운다:
-
-> `Immediately` — *"No wait. **An explicit token used to represent 'none'.**"*
-
-없음이 null도 빈 문자열도 아닌 **타입 안의 한 항목**이다. 이 규칙의 실제 형태는 셋이다.
-
-- **생성자를 private으로 하고 팩토리만 연다.** 무효 조합이 *타이핑되지 않는다*
-- **sentinel 쌍을 없앤다.** `bool IsX` + `string XKey`는 4조합 중 2개가 무효다. 키 하나로 합친다
-- **함께여야 하는 연산은 함께 노출한다.** 따로 부를 수 있으면 언젠가 따로 불린다
-
-우선순위: **타입이 막는 것 > 생성자가 막는 것 > 로더가 모으는 것.** 위로 올릴 수 있으면 올린다.
-
-### P2 — 검증은 경계에, 안쪽은 전체 함수
-
-평가기에 `default: return false`가 없다. **모르는 것은 로드 시점에 죽는다.**
-
-test13에서 이게 무너진 값이 무엇이었는지가 근거다 — `EpisodeConditionEvaluator.cs:100`은
-null 조건을 통과시키고, `:193`은 `Equal`에서 `BoolValue`를 안 보고 `exists`를 돌려준다.
-`StepGateAdvancer.cs:79`의 `default: return false`는 **모르는 토큰에서 영원히 블록된다.**
-
-경계에서 좁히면 안쪽 함수는 전체 함수가 되고, **방어 코드를 쓸 이유가 사라진다.**
-안쪽에 방어 코드가 보이면 그것이 곧 경계가 새고 있다는 신호다.
-
-### P3 — 스펙 / 진행 / 해석을 섞지 않는다
-
-`GateInFlight`에서 배운다 — *"meaningful only while the token is in-flight"*.
-**저장할 가치가 없는 상태를 타입으로 구분해 두었다.**
-
-| | 예 | 수명 | 저장 |
-|---|---|---|---|
-| **스펙** | `ScenarioProgression` · `ChapterProgression` · `EpisodeNode` | 콘텐츠와 같다 | 콘텐츠로 |
-| **진행** | `ProgressionState` | 플레이어의 것 | **세이브** |
-| **해석** | `ChapterAdvance` · `ResolvedOption` | 이 순간뿐 | **안 한다** |
-
-test13이 무너진 자리가 여기다 — `EpisodeSelectionStateData`가 `Stats`(진행)와
-`LockedEpisodeIds`·`VisibleEpisodeIds`(해석)를 한 자루에 넣고 평가기가 그걸 직접 뒤집는다.
-그래서 세이브에 옛 판정이 섞여 들어갈 길이 열린다.
-
-**구조적 표현**: 해석 타입에는 `[Serializable]`을 붙이지 않는다.
-
-### P4 — 계획을 먼저 확정하고, 그 뒤엔 커서만 움직인다
-
-`StepGatePlanBuilder.BuildForCurrentNode`가 노드 진입 시 토큰 목록을 통째로 만든다.
-그 뒤 `StepGateAdvancer`는 커서만 민다. **판단과 실행이 시간적으로 분리돼 있다.**
-
-진행 층의 §G6 *"조건 판정은 커밋 전 값으로 한다"*가 같은 원칙이다.
-`ChapterTransition.Resolve`가 에피소드 진입 시점에 선택지를 확정하고, 그 뒤로는 고르기만 한다.
-
-### P5 — 조용히 버리지 않는다
-
-진단은 **자리를 짚는다**: `Chapters[ch01].Nodes[ep03].NextOptions[1].Conditions[0]`.
-진단은 **전부 모아서 한 번에** 낸다 — 첫 오류에서 멈추면 작가가 왕복을 여러 번 한다.
-잠긴 이유는 **원인 조건을 지목**한다. 툴 증명기가 이미 그렇게 하므로 여기도 같아야 한다.
+**우선순위: 타입이 막는 것 > 생성자가 막는 것 > 로더가 모으는 것.** 위로 올릴 수 있으면 올린다.
 
 ---
 
@@ -263,6 +218,14 @@ namespace Ked.Progression
         /// <summary>이 길을 타는 순간 원자적으로 1회 커밋된다. 스탯이 변하는 유일한 자리.</summary>
         public IReadOnlyList<StatChange> StatChanges { get; }
 
+        /// <summary>
+        /// 지나며 거쳐 갈 연출 노드의 이름 (§G8·H-3). 비면 곧장 간다. 선택지든 자동 진행이든
+        /// 붙는다 — 연출은 간선의 종류와 직교한다. <b>이름 하나뿐이다</b>; 파라미터가 붙기
+        /// 시작하면 그때가 경계면이 넓어지는 순간이다.
+        /// </summary>
+        public string ViaNodeId { get; }
+        public bool HasVia { get; }
+
         public static EpisodeOption Choice(
             string choiceLabel,                     // 비면 예외 — AutoAdvance와 구별된다
             string targetEpisodeId,
@@ -270,11 +233,13 @@ namespace Ked.Progression
             IReadOnlyList<ProgressionCondition> conditions = null,
             bool hideWhenLocked = false,
             string lockedReasonText = null,
-            IReadOnlyList<StatChange> statChanges = null);
+            IReadOnlyList<StatChange> statChanges = null,
+            string viaNodeId = null);
 
         public static EpisodeOption Auto(
             string targetEpisodeId,
-            IReadOnlyList<StatChange> statChanges = null);
+            IReadOnlyList<StatChange> statChanges = null,
+            string viaNodeId = null);
     }
 ```
 
@@ -533,7 +498,7 @@ namespace Ked.Progression
 ```
 
 ```csharp
-    public enum ScenarioAdvanceKind { NextChapter, ScenarioEnded }
+    public enum ScenarioAdvanceKind { NextChapter, ScenarioEnded, DeadEnd }   // DeadEnd = 엔딩키 없는 노드에서 멈춤. 의도한 끝과 섞지 않는다
 
     public readonly struct ScenarioAdvance
     {
@@ -550,7 +515,7 @@ namespace Ked.Progression
         /// <b>조용히 첫 챕터로 돌아가지 않는다.</b>
         /// </summary>
         public static ScenarioAdvance Resolve(
-            ScenarioProgression scenario, ProgressionState state, string endingKey);
+            ScenarioProgression scenario, ProgressionState state);   // 엔딩키는 지금 노드에서 읽는다 (D2)
     }
 ```
 
@@ -571,28 +536,13 @@ namespace Ked.Progression
 
 ```csharp
     /// <summary>
-    /// 세이브의 <b>진행 블록</b>. 대사 위치(<c>lineId</c>·<c>nodeName</c>·선택 재현 기록)는
-    /// 이 패키지가 모른다 — 호스트의 <c>VNSaveData</c>가 계속 소유한다.
+    /// 세이브의 <b>진행 블록</b>을 굽고 되살린다. 대사 위치(<c>lineId</c>·<c>nodeName</c>·
+    /// 선택 재현 기록)는 이 패키지가 모른다 — 호스트의 대사 블록이 소유한다
+    /// (<c>host-integration.md</c> §3).
     ///
-    /// ⚠ <c>[Serializable]</c>도 JSON 어트리뷰트도 붙이지 않는다 (규율 2). 굽는 것은 호스트다.
+    /// 모양은 <see cref="ProgressionSaveDto"/>다. ⚠ <c>[Serializable]</c>도 JSON 어트리뷰트도
+    /// 붙이지 않는다 (규율 2). 굽는 것은 호스트다.
     /// </summary>
-    public sealed class ProgressionSave
-    {
-        public const int CurrentSchemaVersion = 1;
-
-        public int SchemaVersion { get; }
-        public string ScenarioId { get; }
-        public string CurrentChapterId { get; }
-        public string CurrentEpisodeId { get; }
-
-        public IReadOnlyDictionary<string, int> Stats { get; }
-        public IReadOnlyList<string> ClearedEpisodeIds { get; }
-        public IReadOnlyList<string> ClearedChapterIds { get; }
-        public IReadOnlyList<ChapterEnding> EndingHistory { get; }
-
-        public static ProgressionSave From(ProgressionState state, string scenarioId);
-    }
-
     public static class ProgressionSave
     {
         public const int CurrentSchemaVersion = 1;
@@ -614,6 +564,32 @@ namespace Ked.Progression
         public static ProgressionRestoreResult Restore(
             ScenarioProgression scenario, ProgressionSaveDto save);
     }
+
+    /// <summary>경고면 <see cref="State"/>가 있고, 오류면 null이다.</summary>
+    public sealed class ProgressionRestoreResult
+    {
+        public ProgressionState State { get; }
+        public IReadOnlyList<ProgressionDiagnostic> Diagnostics { get; }
+        public bool IsValid => State != null;
+    }
+```
+
+```csharp
+namespace Ked.Progression.Dto
+{
+    /// <summary>어트리뷰트도 직렬화기도 없는 POCO. 호스트가 원하는 직렬화기로 굽는다.</summary>
+    public sealed class ProgressionSaveDto
+    {
+        public int SchemaVersion { get; set; }
+        public string ScenarioId { get; set; }
+        public string CurrentChapterId { get; set; }
+        public string CurrentEpisodeId { get; set; }
+        public Dictionary<string, int> Stats { get; set; }
+        public List<string> ClearedEpisodeIds { get; set; }
+        public List<string> ClearedChapterIds { get; set; }
+        public List<ChapterEndingDto> EndingHistory { get; set; }
+    }
+}
 ```
 
 **콘텐츠가 바뀌었을 때** — 이 표가 곧 테스트 목록이다.
@@ -642,6 +618,134 @@ namespace Ked.Progression
         public string Message { get; }
     }
 ```
+
+---
+
+### 2.9 흐름 — 호스트와 만나는 자리 (2026-08-20)
+
+⚠ **해석이다. 저장하지 않는다** (P3). `EpisodeFlow`가 들고 있는 저장 대상은 `State` 하나뿐이고
+`Phase`·`Pending`은 세이브에 가지 않는다. 이어 하기는 `Resume(scenario, state)`이고 그 결과는
+언제나 `EpisodeEntered` — 그 에피소드의 대사를 처음부터 틀어 달라는 요청이다.
+
+```csharp
+    /// <summary>지금 호스트가 해야 하는 일. <b>다섯이 이 패키지의 외부 연결점 전부다.</b></summary>
+    public enum FlowRequestKind
+    {
+        None = 0,
+        PlayDialogue = 10,     // 대사를 재생하라. 이름은 EpisodeNode.DialogueEntryId
+        PresentOptions = 20,   // 선택지를 그리고 하나 고르게 하라
+        PlayVia = 30,          // 지나며 거쳐 갈 연출을 재생하라. 이름은 ViaNodeId
+        PersistSave = 40,      // 세이브 블록을 써라. 어디에 어떻게는 호스트의 일
+        Finished = 900,        // 더 부탁할 것이 없다. 끝났거나 막혔다
+    }
+
+    /// <summary>
+    /// 경계를 건너가는 부탁 하나. <see cref="ChapterAdvance"/>와 같은 모양 —
+    /// <see cref="Kind"/>가 정하고 그 갈래에 쓰이는 칸만 채워진다. 생성자는 internal.
+    /// </summary>
+    public readonly struct FlowRequest
+    {
+        public FlowRequestKind Kind { get; }
+        public string NodeName { get; }                       // PlayDialogue · PlayVia. 이름 하나뿐
+        public IReadOnlyList<ResolvedOption> Options { get; } // PresentOptions. 배열 순서 = 화면 순서
+        public int HiddenCount { get; }                       // PresentOptions. 로그가 본다
+        public ProgressionSaveDto Save { get; }               // PersistSave
+        public ScenarioAdvance Outcome { get; }               // Finished. 의도한 끝 / 막다른 곳
+    }
+
+    /// <summary>
+    /// 한 에피소드 트랜잭션이 지나는 자리들. <b>멈추는 자리</b>(호스트가 할 일이 있어
+    /// <see cref="EpisodeFlow.Pending"/>이 채워진다)와 <b>통과 자리</b>(어디까지 갔다가 죽었나를
+    /// 남긴다). 번호는 주 흐름 10단위, 곁가지 +1, 종료 900대 — 값 자체에 뜻은 없다.
+    /// </summary>
+    public enum EpisodePhase
+    {
+        None = 0,
+        EpisodeEntered = 10,           // 멈춤 — PlayDialogue
+        OptionsResolved = 30,          // 통과 — 이 순간 이 회차의 판단이 얼어붙는다 (P4)
+        AwaitingChoice = 40,           // 멈춤 — PresentOptions
+        AutoAdvancing = 41,            // 통과
+        ViaPlaying = 50,               // 멈춤 — PlayVia
+        Committed = 60,                // 멈춤 — PersistSave. 트랜잭션 경계 = 저장 경계
+        ChapterEnded = 80,             // 통과 — 에피소드 층과 시나리오 층이 만나는 유일한 자리
+        ChapterBoundaryCommitted = 81, // 멈춤 — PersistSave. 스탯은 그대로 넘어왔다 (D1)
+        ScenarioFinished = 900,        // 의도한 끝
+        DeadEnd = 901,                 // 엔딩키 없는 노드에서 멈췄다 — 미완성이지 끝이 아니다
+    }
+```
+
+```csharp
+    /// <summary>
+    /// 에피소드 하나를 트랜잭션으로 굴리고, 챕터 경계를 넘긴다.
+    ///
+    /// <b>이 흐름은 끌려간다.</b> 스스로 무엇을 부르지 않고 <see cref="Pending"/>에 값을 내놓고
+    /// 멈춘다. 인터페이스·콜백·이벤트·async가 없어 유니티와 Avalonia가 같은 흐름을 공유한다.
+    /// 완료 통지 넷은 각각 한 Phase에서만 유효하고, 다른 자리에서 부르면 던진다 —
+    /// 무효 조합을 타입으로 못 올렸으므로 생성자 급에서 막는다.
+    /// </summary>
+    public sealed class EpisodeFlow
+    {
+        public EpisodePhase Phase { get; }
+        public FlowRequest Pending { get; }
+        public ProgressionState State { get; }      // 유일한 저장 대상
+        public bool IsFinished { get; }             // ScenarioFinished || DeadEnd
+
+        public static EpisodeFlow Begin(ScenarioProgression scenario);                          // 새 게임 (D1)
+        public static EpisodeFlow Resume(ScenarioProgression scenario, ProgressionState state); // 이어 하기 — state는 CreateInitialState/Restore가 낸 것이어야 한다 (P2)
+
+        public void DialogueCompleted();   // EpisodeEntered에서만. 여기서 Resolve가 한 번 돈다 (§G6, P4)
+        public void Choose(int optionIndex); // AwaitingChoice에서만. 잠긴 것을 고르면 BlockingCondition을 지목해 던진다 (P5)
+        public void ViaCompleted();        // ViaPlaying에서만
+        public void SavePersisted();       // Committed · ChapterBoundaryCommitted에서만. "처리했다"는 뜻 — 디스크 정책은 호스트 것
+    }
+```
+
+```
+  EpisodeEntered ──[대사]──► OptionsResolved ──┬─► AwaitingChoice ──[선택]──┐
+       ▲                                        ├─► AutoAdvancing ──────────┤
+       │                                        │                           ▼
+       │                                        │                    (ViaPlaying)
+       │                                        │                           │
+       └────────[세이브]──── Committed ◄─────────┼───────────────────────────┘
+                                                │
+                                                └─► ChapterEnded ──► ScenarioTransition
+                                                       ├─ NextChapter ──► ChapterBoundaryCommitted ──[세이브]──► EpisodeEntered
+                                                       ├─ ScenarioEnded ► ScenarioFinished
+                                                       └─ DeadEnd ──────► DeadEnd (엔딩키 없는 노드)
+```
+
+**여기서 판단과 실행이 갈린다**: `DialogueCompleted`가 `ChapterTransition.Resolve`를 **한 번**
+부르고 결과를 `_advance`에 고정한다. 뒤의 `Choose`는 그 목록에서 고르기만 한다. 챕터 경계도
+같다 — `ScenarioTransition.Resolve`가 먼저 정하고 `CommitChapterEnding`이 적용만 한다.
+
+### 2.10 증명 — 플레이 중엔 돌지 않는 것
+
+```csharp
+    public static class ChapterReachability
+    {
+        public const int StateLimit = 250_000;   // 완전 탐색 상한
+
+        /// <summary>
+        /// 상태 = (에피소드, 스탯 정수 벡터)를 완전 탐색한다. 저작 도구의
+        /// <c>ChapterReachabilityProver</c>를 <b>알고리즘을 바꾸지 않고</b> 옮긴 것이고,
+        /// 등가성은 <c>Tests/Fixtures/reachability-oracle.json</c>(7케이스)로 고정했다.
+        /// <paramref name="clearedChapterIds"/>는 진입 가정 — 비우면 등가성에 영향이 없다.
+        /// </summary>
+        public static ReachabilityResult Prove(
+            ChapterProgression chapter, IEnumerable<string> clearedChapterIds = null);
+    }
+
+    public sealed class ReachabilityResult
+    {
+        public IReadOnlyCollection<string> ReachableEpisodeIds { get; }
+        public IReadOnlyList<UnreachableEpisode> Unreachable { get; }   // 원인을 값으로 (UnreachableCause + BlockingCondition)
+        public bool ExplorationComplete { get; }                         // StateLimit 안에 끝났나
+        public IReadOnlyList<StatSpan> SpansFor(string episodeId);      // 에피소드별 도착 폭 — 챕터 연쇄의 재료
+    }
+```
+
+**과대근사다** — min/max를 축별로 독립 추적하므로 "도달 불가"라고 하면 진짜 도달 불가다.
+거짓 경보가 없는 방향이고, 무엇을 더하든 이 성질은 깨지 않는다(`principles.md` §6).
 
 ---
 
@@ -678,24 +782,28 @@ namespace Ked.Progression
 
 ---
 
-## 5. 지금 코드에서 바뀌는 것
+## 5. 1기에서 바뀐 것 — 전부 반영됐다
 
-| | 무엇 | 왜 | 깨지나 |
-|---|---|---|---|
-| 1 | `ProgressionCondition` 생성자 → 팩토리 셋 | P1 | 테스트 다수 (기계적) |
-| 2 | `ConditionKind.ChapterCleared` 추가 | 시나리오 층 | 아니오 |
-| 3 | `EpisodeOption` 생성자 → `Choice` / `Auto` | P1 — **문구 지움 사고** | 테스트 다수 (기계적) |
-| 4 | `EpisodeNode.IsChapterEndingCandidate` 제거 | sentinel 쌍 소멸 | 예 |
-| 5 | `ProgressionState`에 챕터·엔딩 이력 추가 | 시나리오 층 | 아니오 |
-| 6 | `WithStatChanges` + `WithMovedTo` → `Commit` 하나 | P1 — 트랜잭션 경계 | 예 |
-| 7 | `ChapterProgression.Stats`가 소유 → 참조 | D1 | 예 |
-| 8 | `EndingRule` · `ScenarioProgression` 신설 | — | 아니오 |
+아래 여덟은 2026-08-18~19에 전부 코드에 들어갔다(CHANGELOG "변경" 절). 여기 남기는 이유는
+**왜 그 모양이 됐는지**를 잃지 않기 위해서다.
 
-`0.x`는 공개 표면을 약속하지 않는 구간이다. **지금이 가장 싸다.**
+| | 무엇 | 왜 |
+|---|---|---|
+| 1 | `ProgressionCondition` 생성자 → 팩토리 셋 | P1 |
+| 2 | `ConditionKind.ChapterCleared` 추가 | 시나리오 층 |
+| 3 | `EpisodeOption` 생성자 → `Choice` / `Auto` | P1 — **문구 지움 사고** |
+| 4 | `EpisodeNode.IsChapterEndingCandidate` 제거 | sentinel 쌍 소멸 |
+| 5 | `ProgressionState`에 챕터·엔딩 이력 추가 | 시나리오 층 |
+| 6 | `WithStatChanges` + `WithMovedTo` → `Commit` 하나 | P1 — 트랜잭션 경계 |
+| 7 | `ChapterProgression.Stats`가 소유 → 참조 | D1 |
+| 8 | `EndingRule` · `ScenarioProgression` 신설 | — |
+
+**2기에서 바뀌는 것**은 `work-plan.md` 트랙 C 다섯뿐이다 — `StatChange` 지정(Set) ·
+단일 챕터 시나리오 · `CreateProofEntryState` 개명 · `.meta` · `0.2.0`.
 
 ---
 
-## 6. 결정
+## 6. 결정 — 정본은 `principles.md` §3. 여기는 D1·D2의 근거 전문
 
 | | 결정 | 답 |
 |---|---|---|

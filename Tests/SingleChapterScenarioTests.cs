@@ -18,33 +18,31 @@ namespace Ked.Progression.Tests
     /// <summary>
     /// <b>챕터 하나를 시나리오로 감싼다</b> — 챕터만 떼어 테스트 플레이하는 길.
     ///
-    /// 툴은 챕터 JSON만 내는데 <see cref="EpisodeFlow"/>는 시나리오를 요구한다. 그런데
-    /// 이 길은 시나리오 저작이 생긴 뒤에도 사라지지 않는다 — 작가가 ch03만 돌려 보고
-    /// 싶은 때가 영원히 있다. 호스트 둘이 각자 감싸는 코드를 만들지 않게 코어에 둔다.
+    /// 툴은 챕터 JSON만 내는데 시나리오 층은 시나리오를 요구한다. 그런데 이 길은 시나리오
+    /// 저작이 생긴 뒤에도 사라지지 않는다 — 작가가 ch03만 돌려 보고 싶은 때가 영원히 있다.
+    /// 호스트 둘이 각자 감싸는 코드를 만들지 않게 코어에 둔다.
     ///
-    /// <b>여기가 유니티 H1의 예행이다.</b> 아래 두 테스트가 하는 일이 곧
-    /// <c>ProgressionDriver.RunAsync</c>가 할 일이고, 다른 점은 요청을 수행하는 데
-    /// 시간이 걸리느냐뿐이다 — 코어에겐 구별이 없다.
+    /// <b>여기가 호스트 루프의 예행이다.</b> 아래 <c>Walk</c>가 하는 일이 곧 유니티
+    /// <c>ProgressionDriver</c>가 할 일이고, 다른 점은 요청 수행에 시간이 걸리느냐뿐이다.
     ///
     /// ⚠ 픽스처를 읽으므로 <b>dotnet 전용</b>이다(유니티 EditMode에는 Fixtures/가 없다).
     /// </summary>
     public sealed class SingleChapterScenarioTests
     {
-        // ── 끝까지 걷는다 — 호스트 펌프 그대로 ──────────────────────
+        // ── 끝까지 걷는다 — 호스트 루프 그대로 ──────────────────────
 
         [Test]
         public void 믿는_길로_걸으면_좋은끝에_닿는다()
         {
             WalkResult walk = Walk(chooseIndex: 0);
 
-            Assert.That(walk.Phase, Is.EqualTo(EpisodePhase.ScenarioFinished));
             Assert.That(walk.Outcome.Kind, Is.EqualTo(ScenarioAdvanceKind.ScenarioEnded));
             Assert.That(walk.Outcome.EndingKey, Is.EqualTo("ch01_true"));
 
             Assert.That(walk.FinalState.GetStat("trust"), Is.EqualTo(2));
             Assert.That(walk.FinalState.GetStat("fatigue"), Is.EqualTo(0));
 
-            // 대사는 에피소드마다 한 번. 마지막 엔딩 노드까지 포함해 넷이다.
+            // 대사는 에피소드마다 한 번. 마지막 엔딩 노드까지 포함해 셋이다.
             Assert.That(walk.DialogueNodes,
                 Is.EqualTo(new[] { "시작", "믿는길", "좋은끝" }));
         }
@@ -54,7 +52,6 @@ namespace Ked.Progression.Tests
         {
             WalkResult walk = Walk(chooseIndex: 1);
 
-            Assert.That(walk.Phase, Is.EqualTo(EpisodePhase.ScenarioFinished));
             Assert.That(walk.Outcome.EndingKey, Is.EqualTo("ch01_alone"));
 
             Assert.That(walk.FinalState.GetStat("fatigue"), Is.EqualTo(1));
@@ -62,24 +59,6 @@ namespace Ked.Progression.Tests
 
             Assert.That(walk.DialogueNodes,
                 Is.EqualTo(new[] { "시작", "혼자길", "쓸쓸한끝" }));
-        }
-
-        [Test]
-        public void 세이브_요청이_에피소드마다_온다()
-        {
-            WalkResult walk = Walk(chooseIndex: 0);
-
-            // 커밋이 곧 저장 경계다 — 스탯만 오르고 안 옮겨 간 상태가 세이브에 실릴 수 없다.
-            Assert.That(walk.SaveRequests, Has.Count.EqualTo(2));
-
-            Assert.That(walk.SaveRequests[0].CurrentEpisodeId, Is.EqualTo("믿는길"));
-            Assert.That(walk.SaveRequests[0].Stats["trust"], Is.EqualTo(2));
-
-            Assert.That(walk.SaveRequests[1].CurrentEpisodeId, Is.EqualTo("좋은끝"));
-
-            // 감싼 시나리오의 ID는 챕터 ID다 — 이어 하기가 이 값으로 짝을 맞춘다.
-            Assert.That(walk.SaveRequests[0].ScenarioId, Is.EqualTo("ch01"));
-            Assert.That(walk.SaveRequests[0].CurrentChapterId, Is.EqualTo("ch01"));
         }
 
         [Test]
@@ -91,40 +70,16 @@ namespace Ked.Progression.Tests
             Assert.That(scenario.StartChapterId, Is.EqualTo("ch01"));
             Assert.That(scenario.Chapters, Has.Count.EqualTo(1));
 
-            // 스탯은 챕터 것이 시나리오로 승격됐다(D1 — 주인은 시나리오다).
-            Assert.That(scenario.Stats.Select(s => s.Key), Is.EquivalentTo(new[] { "trust", "fatigue" }));
+            // 스탯의 주인은 챕터다. 시나리오는 껍데기라 옮길 것이 없다.
+            Assert.That(scenario.StartChapter.Stats.Select(s => s.Key),
+                Is.EquivalentTo(new[] { "trust", "fatigue" }));
 
-            // 플레이 시작값은 시나리오가 세운다. 챕터 것은 증명 진입 가정이다.
-            Assert.That(scenario.CreateInitialState().CurrentEpisodeId, Is.EqualTo("시작"));
+            // 진행 상태도 챕터가 만든다 — 수명이 챕터라서.
+            Assert.That(scenario.StartChapter.CreateEntryState().CurrentEpisodeId,
+                Is.EqualTo("시작"));
         }
 
         // ── 거부 — 조용히 감싸지 않는다 ─────────────────────────────
-
-        [Test]
-        public void 스탯이_없는_챕터는_거부한다()
-        {
-            // 시나리오가 스탯 정의의 주인인데(D1) 줄 것이 없다. 빈 목록으로 감싸면
-            // 조건이 가리키는 스탯이 전부 "정의되지 않음"이 되어, 진짜 원인이
-            // 진단 수십 개 밑에 묻힌다.
-            ChapterProgressionDto dto = ReadChapter();
-            dto.Stats = null;
-
-            ScenarioLoadResult result = ProgressionLoader.LoadAsSingleChapterScenario(dto);
-
-            Assert.That(result.IsValid, Is.False);
-            Assert.That(result.Diagnostics, Has.Count.EqualTo(1));
-            Assert.That(result.Diagnostics[0].Path, Is.EqualTo("Stats"));
-            Assert.That(result.Diagnostics[0].Message, Does.Contain("승격할 것이 없다"));
-        }
-
-        [Test]
-        public void 빈_스탯_목록도_같은_이유로_거부한다()
-        {
-            ChapterProgressionDto dto = ReadChapter();
-            dto.Stats = new List<StatDto>();
-
-            Assert.That(ProgressionLoader.LoadAsSingleChapterScenario(dto).IsValid, Is.False);
-        }
 
         [Test]
         public void 챕터_ID가_비면_거부한다()
@@ -146,6 +101,20 @@ namespace Ked.Progression.Tests
 
             Assert.That(result.IsValid, Is.False);
             Assert.That(result.Diagnostics[0].Message, Does.Contain("역직렬화"));
+        }
+
+        [Test]
+        public void 스탯이_없는_챕터도_실린다()
+        {
+            // 스탯의 주인이 챕터가 된 뒤로, 스탯이 없는 챕터는 정당하다 —
+            // 조건도 증감도 없는 챕터일 뿐이다. 오타는 ChapterInvariants가
+            // "정의되지 않은 스탯"으로 잡는다.
+            ChapterProgressionDto dto = ReadChapter();
+
+            dto.Stats = null;
+            StripStatUses(dto);
+
+            Assert.That(ProgressionLoader.LoadAsSingleChapterScenario(dto).IsValid, Is.True);
         }
 
         [Test]
@@ -184,61 +153,62 @@ namespace Ked.Progression.Tests
 
         private sealed class WalkResult
         {
-            public EpisodePhase Phase;
             public ScenarioAdvance Outcome;
             public ProgressionState FinalState;
             public List<string> DialogueNodes = new List<string>();
-            public List<ProgressionSaveDto> SaveRequests = new List<ProgressionSaveDto>();
         }
 
         /// <summary>
-        /// 호스트 펌프를 그대로 돈다 — 유니티 <c>ProgressionDriver</c>가 할 일과 같고,
-        /// 다른 점은 요청 수행에 시간이 안 걸린다는 것뿐이다(즉시 완료 호스트).
+        /// 호스트 루프를 그대로 돈다 — 유니티 <c>ProgressionDriver.PumpAsync</c>와 같은
+        /// 순서이고, 다른 점은 요청 수행에 시간이 안 걸린다는 것뿐이다.
+        ///
+        /// 바깥이 챕터, 안쪽이 에피소드. 진행 상태의 수명이 챕터라 챕터마다 새로 만든다.
         /// </summary>
         private static WalkResult Walk(int chooseIndex)
         {
             var walk = new WalkResult();
-            EpisodeFlow flow = EpisodeFlow.Begin(LoadWrapped());
+            ScenarioProgression scenario = LoadWrapped();
 
+            ChapterProgression chapter = scenario.StartChapter;
             int guard = 0;
 
-            while (!flow.IsFinished)
+            while (true)
             {
-                Assert.That(++guard, Is.LessThan(50), "펌프가 안 끝난다 — 흐름이 도는 중이다.");
+                ProgressionState state = chapter.CreateEntryState();
 
-                FlowRequest request = flow.Pending;
-
-                switch (request.Kind)
+                while (true)
                 {
-                    case FlowRequestKind.PlayDialogue:
-                        walk.DialogueNodes.Add(request.NodeName);
-                        flow.DialogueCompleted();
-                        break;
+                    Assert.That(++guard, Is.LessThan(50), "루프가 안 끝난다 — 흐름이 도는 중이다.");
 
-                    case FlowRequestKind.PresentOptions:
-                        flow.Choose(chooseIndex);
-                        break;
+                    chapter.TryGetNode(state.CurrentEpisodeId, out EpisodeNode node);
+                    walk.DialogueNodes.Add(node.DialogueEntryId);
 
-                    case FlowRequestKind.PlayVia:
-                        flow.ViaCompleted();
-                        break;
+                    // 판정은 대사 뒤 한 번. 아래는 이미 정해진 목록에서 고르기만 한다.
+                    ChapterAdvance advance = ChapterTransition.Resolve(chapter, state);
 
-                    case FlowRequestKind.PersistSave:
-                        walk.SaveRequests.Add(request.Save);
-                        flow.SavePersisted();
-                        break;
+                    if (advance.Kind == ChapterAdvanceKind.ChapterEnded)
+                    {
+                        ScenarioAdvance next = ScenarioTransition.Resolve(chapter, state);
 
-                    default:
-                        Assert.Fail($"예상 못 한 요청: {request.Kind}");
+                        if (next.Kind != ScenarioAdvanceKind.NextChapter)
+                        {
+                            walk.Outcome = next;
+                            walk.FinalState = state;
+
+                            return walk;
+                        }
+
+                        Assert.That(scenario.TryGetChapter(next.NextChapterId, out chapter), Is.True);
                         break;
+                    }
+
+                    EpisodeOption chosen = advance.Kind == ChapterAdvanceKind.AutoAdvance
+                        ? advance.AutoOption
+                        : advance.Options[chooseIndex].Option;
+
+                    state = state.Commit(chapter, chosen);
                 }
             }
-
-            walk.Phase = flow.Phase;
-            walk.Outcome = flow.Pending.Outcome;
-            walk.FinalState = flow.State;
-
-            return walk;
         }
 
         private static ScenarioProgression LoadWrapped()
@@ -246,7 +216,7 @@ namespace Ked.Progression.Tests
             ScenarioLoadResult result =
                 ProgressionLoader.LoadAsSingleChapterScenario(ReadChapter());
 
-            Assert.That(result.HasErrors, Is.False, Joined(result));
+            Assert.That(result.Diagnostics, Is.Empty, Joined(result));
 
             return result.Scenario;
         }
@@ -259,6 +229,24 @@ namespace Ked.Progression.Tests
             Assert.That(File.Exists(path), Is.True, $"픽스처가 없다: {path}");
 
             return JsonSerializer.Deserialize<ChapterProgressionDto>(File.ReadAllText(path));
+        }
+
+        // 스탯을 지우면 그것을 가리키던 조건·증감이 미정의가 된다. 스탯 없는 챕터를
+        // 만들려면 가리키는 쪽도 같이 걷어야 한다.
+        private static void StripStatUses(ChapterProgressionDto dto)
+        {
+            foreach (EpisodeNodeDto node in dto.Nodes)
+            {
+                if (node.NextOptions == null)
+                    continue;
+
+                foreach (EpisodeOptionDto option in node.NextOptions)
+                {
+                    option.Conditions = null;
+                    option.VisibleConditions = null;
+                    option.StatChanges = null;
+                }
+            }
         }
 
         private static string Joined(ScenarioLoadResult result) =>

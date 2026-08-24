@@ -25,28 +25,44 @@
 | 한다 | 안 한다 |
 |---|---|
 | 진행 모델 (챕터·에피소드·선택지·조건·스탯) | Yarn 재생 — `DialogueEntryId`는 문자열일 뿐이다 |
-| 조건 평가 · 선택지 가시성 · 전이 판정 | 그래프 편집·레이아웃 — 저작 도구의 일 |
+| 조건 평가 · 선택지 가시성 · 전이 판정 · 에피소드 트랜잭션(`EpisodeFlow`) | 그래프 편집·레이아웃 — 저작 도구의 일 |
 | 스탯 정의(초기값·경계)와 clamp | 게임별 스탯의 **의미** — `game.definition.json`이 공급 |
-| 도달성 증명 | 세이브 직렬화 — 나중에, 별도로 |
+| 도달성 증명 · 세이브 블록(굽기·되살리기) | 세이브 **파일**·슬롯·썸네일 — 호스트의 일 |
 | 로드 시 검증과 진단 | JSON 파싱 — 호스트가 한다 |
 
 ---
 
-## 현재 상태 — `0.1.0` 태그 이후, 미태그
+## 현재 상태 — `0.1.0` 태그 이후, 미태그 (2026-08-21)
 
-**진행 층이 돈다.** 저작 도구가 낸 실제 챕터 JSON이 오류 0으로 실리고, 시나리오 → 챕터 →
-에피소드가 이어지며 **스탯이 챕터를 넘어간다.** 세이브를 굽고 되살리며, 도달성 증명이
-저작 도구와 **같은 답을 낸다는 것까지 코퍼스로 고정**했다. 테스트 140개 · 빌드 경고 0.
+**코어는 완성 상태다.** 시나리오 → 챕터 → 에피소드 세 층, 전이·세이브·도달성 증명, 그리고
+호스트가 모는 `EpisodeFlow`까지. 저작 도구가 낸 실제 챕터 JSON이 오류 0으로 실리고, 세이브를
+굽고 되살리며, 도달성 증명이 저작 도구와 같은 답을 낸다는 것을 코퍼스로 고정했다.
 
-**계획한 게이트 여섯이 전부 닫혔다.** 남은 것은 이 저장소 밖이다 —
-`.meta`(유니티 채택) · 챕터 연쇄 증명(콘텐츠가 이어진 뒤) · 저작·런타임 쪽 작업.
+**아직 아무 호스트도 이 코어를 몰아 보지 않았다.** 유니티도 VnTool도 참조 0건. 그것이 2기의
+일이고, 코어가 바뀌는 것은 `StatChange` 지정(Set) 한 칸과 단일 챕터 시나리오 헬퍼뿐이다.
+
+### 코어가 바깥에 부탁하는 것 — 이것이 전부다
+
+| `FlowRequestKind` | 건너가는 것 | 호스트가 마쳤다고 알리는 법 |
+|---|---|---|
+| `PlayDialogue` | 이름 (`DialogueEntryId`) | `DialogueCompleted()` |
+| `PresentOptions` | `ResolvedOption[]` | `Choose(index)` |
+| `PlayVia` | 이름 (`ViaNodeId`) | `ViaCompleted()` |
+| `PersistSave` | `ProgressionSaveDto` | `SavePersisted()` |
+| `Finished` | `ScenarioAdvance` | — |
+
+코어는 아무것도 부르지 않는다. 인터페이스·콜백·이벤트·async가 0개다. 값을 내놓고 멈추면
+호스트가 제 방식으로 처리하고 완료를 알린다. 그래서 유니티의 프레임 루프와 Avalonia의
+디스패처가 완전히 다른 시간 모델인데도 둘 다에 붙는다.
 
 | 먼저 볼 것 | |
 |---|---|
-| [`docs/architecture.md`](docs/architecture.md) | **타입의 정본** — 원칙 다섯과 실제 형태 |
-| [`docs/handoff.md`](docs/handoff.md) | 지금 무엇이 참인가 · 함정 · 부채 |
-| [`docs/work-plan.md`](docs/work-plan.md) | 순서 · 게이트 · 남은 결정 |
-| `Tests/ArchitectureWalkthroughTests.cs` | 흐름 전체가 한 화면 |
+| [`docs/principles.md`](docs/principles.md) | **규칙의 정본** — P·D·규율·§G 대응, 경계면, 성장 규칙 |
+| [`docs/architecture.md`](docs/architecture.md) | **타입의 정본** — 실제 형태 |
+| [`docs/host-integration.md`](docs/host-integration.md) | **호스트가 코어를 쥐는 법** — 유니티 드라이버, 세이브 합성, Avalonia 채택 |
+| [`docs/work-plan.md`](docs/work-plan.md) | 2기 순서 · 게이트 |
+| [`docs/handoff.md`](docs/handoff.md) | 지금 무엇이 참인가 · 함정 |
+| `Tests/ArchitectureWalkthroughTests.cs` · `Tests/EpisodeFlowTests.cs` | 흐름 전체와 펌프의 모양이 한 화면 |
 
 `0.x` 동안은 공개 표면을 약속하지 않는다. 자유롭게 깨도 되는 구간이다.
 
@@ -125,6 +141,7 @@ dotnet test Tests/Ked.Progression.Tests.csproj
 | | |
 |---|---|
 | `.meta` 파일 | 아직 없다. **유니티에서 한 번 임포트해 생성한 뒤 커밋해야 한다** — UPM git 패키지는 커밋된 `.meta`의 GUID가 참조 안정성이다 |
-| bool 스탯을 무엇이 켜나 | §G4가 bool 증감을 금지해 **간선으로는 값이 안 바뀐다.** 초기값이 전부이고, 켜는 경로가 계약서에도 여기에도 없다 (`docs/handoff.md` §6-4) |
-| 저작 `간선` 시트의 `종류` 열 | 없으면 "문구를 실수로 지운 것"과 의도한 자동 진행을 데이터로 구별할 수 없다. 지금은 로더가 경고로 때운다 (D5) |
-| 챕터 연쇄 증명 | 증명은 챕터 하나 단위로 닫혔다. 잇는 방법은 정해졌고(`docs/work-plan.md` §9 안 (나)), **콘텐츠가 실제로 이어진 뒤에 한다** |
+| `StatChange` 지정(Set) | 깃발(bool 스탯)을 켜는 칸. 저작 쪽은 끝났고 이쪽 DTO에 `Op`가 설 때까지 **깃발을 쓰는 챕터는 내보내기가 거부된다** (`docs/work-plan.md` C1) |
+| 단일 챕터 시나리오 | 툴이 시나리오를 아직 저작하지 않는다. 챕터 하나를 감싸는 헬퍼가 필요하다 (C2) |
+| 간선 `Kind`를 JSON으로 | 저작엔 v11 `종류` 열이 있고 JSON엔 아직 `ChoiceLabel == ""`이 자동 진행이다. 그때까지 로더가 경고 한 줄로 모은다 (D5 · X3) |
+| 챕터 연쇄 증명 | 챕터 하나 단위로 닫혔다. 잇는 방법은 정해졌고(`docs/work-plan.md` §7) 콘텐츠가 이어진 뒤에 한다 |

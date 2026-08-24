@@ -72,7 +72,7 @@ namespace Ked.Progression.Tests
         /// </summary>
         private static string WalkToEnd(ChapterProgression chapter, int choiceIndex)
         {
-            ProgressionState state = chapter.CreateProofEntryState();
+            ProgressionState state = chapter.CreateEntryState();
             ChapterAdvance advance = ChapterTransition.Resolve(chapter, state);
 
             Assert.That(advance.Kind, Is.EqualTo(ChapterAdvanceKind.AwaitPlayerChoice));
@@ -86,7 +86,10 @@ namespace Ked.Progression.Tests
 
                 if (advance.Kind == ChapterAdvanceKind.ChapterEnded)
                 {
-                    return advance.EndingKey;
+                    // 엔딩키는 해석 결과가 아니라 노드가 진다.
+                    chapter.TryGetNode(state.CurrentEpisodeId, out EpisodeNode last);
+
+                    return last.EndingKey;
                 }
 
                 state = state.Commit(
@@ -132,12 +135,14 @@ namespace Ked.Progression.Tests
         }
 
         [Test]
-        public void 부착도_엔딩키도_그대로_온다()
+        public void 부착이던_노드도_평범한_노드로_온다()
         {
+            // 부착은 모델 개념이 아니다 — 노드 종류를 걷어냈으므로 그냥 노드다.
+            // 들어오는 간선이 없으면 도달성 증명이 그것으로 잡는다.
             ChapterProgression chapter = ProgressionLoader.Load(ReadFixture()).Chapter;
 
             Assert.That(chapter.TryGetNode("attach05.02s", out EpisodeNode attachment), Is.True);
-            Assert.That(attachment.Kind, Is.EqualTo(EpisodeKind.Attachment));
+            Assert.That(attachment.EpisodeId, Is.EqualTo("attach05.02s"));
 
             Assert.That(chapter.TryGetNode("main05.end", out EpisodeNode ending), Is.True);
             Assert.That(ending.IsEndingCandidate, Is.True);
@@ -145,17 +150,19 @@ namespace Ked.Progression.Tests
         }
 
         [Test]
-        public void 문구가_빈_간선이_경고로_보고된다()
+        public void 문구가_빈_간선은_조용히_자동_진행이다()
         {
-            // D5 — 저작 데이터에 종류 열이 없어 문구의 유무로 판별한다.
-            // 견본에는 자동 진행이 둘 있다(main05.01→02, main05.03→end).
+            // 문구의 유무로 간선 종류를 가르는 것이 규약이다. 견본에는 자동 진행이
+            // 둘 있고(main05.01→02, main05.03→end), 규약을 지킨 데이터이므로
+            // 진단이 하나도 없어야 한다.
             ProgressionLoadResult result = ProgressionLoader.Load(ReadFixture());
 
-            ProgressionDiagnostic[] warnings = result.Diagnostics
-                .Where(d => d.Severity == ProgressionDiagnosticSeverity.Warning).ToArray();
+            Assert.That(result.Diagnostics, Is.Empty);
 
-            Assert.That(warnings.Length, Is.EqualTo(1));
-            Assert.That(warnings[0].Message, Does.Contain("2개"));
+            Assert.That(result.Chapter.Nodes
+                    .SelectMany(node => node.NextOptions)
+                    .Count(option => option.Kind == OptionKind.AutoAdvance),
+                Is.EqualTo(2));
         }
 
         [Test]
@@ -165,7 +172,7 @@ namespace Ked.Progression.Tests
             // 견본은 세 갈래를 모두 지난다(자동 진행 → 선택 → 자동 진행 → 종료).
             ChapterProgression chapter = ProgressionLoader.Load(ReadFixture()).Chapter;
 
-            ProgressionState state = chapter.CreateProofEntryState();
+            ProgressionState state = chapter.CreateEntryState();
             var seen = new System.Collections.Generic.List<ChapterAdvanceKind>();
 
             for (int step = 0; step < 10; step++)
@@ -176,9 +183,9 @@ namespace Ked.Progression.Tests
                 if (advance.Kind == ChapterAdvanceKind.ChapterEnded)
                 {
                     Assert.That(state.CurrentEpisodeId, Is.EqualTo("main05.end"));
-                    Assert.That(advance.EndingKey, Is.EqualTo("ch05_normal"));
-                    Assert.That(state.IsEpisodeCleared("main05.01"), Is.True);
-                    Assert.That(state.IsEpisodeCleared("main05.02"), Is.True);
+
+                    chapter.TryGetNode(state.CurrentEpisodeId, out EpisodeNode last);
+                    Assert.That(last.EndingKey, Is.EqualTo("ch05_normal"));
 
                     Assert.That(seen, Does.Contain(ChapterAdvanceKind.AutoAdvance));
                     Assert.That(seen, Does.Contain(ChapterAdvanceKind.AwaitPlayerChoice));

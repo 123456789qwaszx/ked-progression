@@ -3,10 +3,6 @@
   "DisplayName": "두 챕터 데모",
   "StartChapterId": "ch01",
 
-  "Stats": [
-    { "Key": "trust", "DisplayName": "신뢰", "Type": "Number", "Initial": 0, "Minimum": 0, "Maximum": 5 }
-  ],
-
   "Chapters": [
     {
       "ChapterId": "ch01",
@@ -14,7 +10,7 @@
       "StartEpisodeId": "ep_01",
 
       "Stats": [
-        { "Key": "trust", "DisplayName": "신뢰", "Type": "Number", "Initial": 5, "Minimum": 0, "Maximum": 5 }
+        { "Key": "trust", "DisplayName": "신뢰", "Type": "Number", "Initial": 0, "Minimum": 0, "Maximum": 5 }
       ],
 
       "Nodes": [
@@ -68,6 +64,10 @@
       "ChapterId": "ch02_trusted",
       "DisplayName": "2장 — 함께",
       "StartEpisodeId": "ep_a",
+
+      "Stats": [
+        { "Key": "trust", "DisplayName": "신뢰", "Type": "Number", "Initial": 0, "Minimum": 0, "Maximum": 5 }
+      ],
 
       "Nodes": [
         {

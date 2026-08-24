@@ -18,7 +18,7 @@ namespace Ked.Progression.Tests
             new StatDefinition("met_willow", "윌로를 만남", StatType.Bool, 0, 0, 1);
 
         private static EpisodeNode Node(string id, params EpisodeOption[] options) =>
-            new EpisodeNode(id, id, EpisodeKind.Main, "entry_" + id, options);
+            new EpisodeNode(id, id, "entry_" + id, options);
 
         private static ChapterProgression Chapter(params EpisodeNode[] nodes) =>
             new ChapterProgression(
@@ -48,11 +48,10 @@ namespace Ked.Progression.Tests
         [Test]
         public void 스탯_초기값으로_시작_상태를_만든다()
         {
-            ProgressionState state = TwoStep().CreateProofEntryState();
+            ProgressionState state = TwoStep().CreateEntryState();
 
             Assert.That(state.CurrentEpisodeId, Is.EqualTo("ep_01"));
             Assert.That(state.GetStat("trust"), Is.EqualTo(0));
-            Assert.That(state.ClearedEpisodeIds, Is.Empty);
         }
 
         // ── 커밋 = 트랜잭션 경계 ────────────────────────────────────
@@ -60,18 +59,17 @@ namespace Ked.Progression.Tests
         [Test]
         public void 커밋은_스탯과_이동을_함께_한다()
         {
-            // 셋이 한 연산이다 — 스탯 반영 · 클리어 표시 · 이동. 따로 부를 수 있으면
-            // 언젠가 따로 불리고, 그 순간 "스탯만 바뀌고 안 옮겨 간" 상태가 생긴다.
+            // 둘이 한 연산이다 — 스탯 반영과 이동. 따로 부를 수 있으면 언젠가 따로
+            // 불리고, 그 순간 "스탯만 바뀌고 안 옮겨 간" 상태가 생긴다.
             EpisodeOption exit = EpisodeOption.Choice(
                 "간다", "ep_02", statChanges: new[] { StatChange.Add("trust", 99) });
 
             ChapterProgression chapter = Chapter(Node("ep_01", exit), Node("ep_02"));
 
-            ProgressionState after = chapter.CreateProofEntryState().Commit(chapter, exit);
+            ProgressionState after = chapter.CreateEntryState().Commit(chapter, exit);
 
             Assert.That(after.GetStat("trust"), Is.EqualTo(5), "경계로 clamp된다");
             Assert.That(after.CurrentEpisodeId, Is.EqualTo("ep_02"));
-            Assert.That(after.IsEpisodeCleared("ep_01"), Is.True);
         }
 
         [Test]
@@ -96,7 +94,7 @@ namespace Ked.Progression.Tests
                 Node("ep_01", fromEp01),
                 Node("ep_02", fromEp02));
 
-            ProgressionState atEp01 = chapter.CreateProofEntryState();
+            ProgressionState atEp01 = chapter.CreateEntryState();
 
             Assert.DoesNotThrow(() => atEp01.Commit(chapter, fromEp01));
             Assert.Throws<ArgumentException>(() => atEp01.Commit(chapter, fromEp02));
@@ -191,13 +189,12 @@ namespace Ked.Progression.Tests
         // ── Cleared 계열 ────────────────────────────────────────────
 
         [Test]
-        public void Cleared_조건은_챕터가_대상의_실재를_보지_않는다()
+        public void 정의되지_않은_스탯을_가리키는_조건은_거부한다()
         {
-            // 에피소드 오타는 "영원히 안 열리는 관문"이 되는데(fail-closed) 그건 도달성
-            // 증명이 잡는 자리다. 챕터 오타는 시나리오가 잡는다 — 챕터는 개수가 적고
-            // 오타가 곧 시나리오가 끊기는 것이라 fail-closed로 두지 않는다.
-            Assert.DoesNotThrow(() => TwoStep(ProgressionCondition.EpisodeCleared("ep_99")));
-            Assert.DoesNotThrow(() => TwoStep(ProgressionCondition.ChapterCleared("ch_99")));
+            // 없는 키를 0으로 읽으면 오타 낸 조건이 "언제나 통과하는 관문"이 되고,
+            // 그 버그는 재생해 봐도 안 보인다.
+            Assert.Throws<ArgumentException>(
+                () => TwoStep(ProgressionCondition.Stat("없는키", ComparisonOp.GreaterOrEqual, 1)));
         }
 
         // ── EndingRules ─────────────────────────────────────────────
@@ -205,7 +202,7 @@ namespace Ked.Progression.Tests
         // ── EndingRules (D2) ────────────────────────────────────────
 
         private static EpisodeNode Ending(string id, string endingKey) =>
-            new EpisodeNode(id, id, EpisodeKind.Main, "entry_" + id, null, endingKey);
+            new EpisodeNode(id, id, "entry_" + id, null, endingKey);
 
         private static ChapterProgression WithEnding(params EndingRule[] rules) =>
             new ChapterProgression(
